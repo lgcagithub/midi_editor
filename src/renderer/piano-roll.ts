@@ -14,6 +14,7 @@ import { renderCursor } from './cursor-renderer'
 import { renderInteraction, type NotePreview, type SelectionRect, type GhostNote } from './interaction-renderer'
 import { secondsToTick } from '@/model/time-convert'
 import { clamp } from '@/utils/math'
+import { MouseHandler } from '@/interaction/mouse-handler'
 
 // ============================================================
 // 常量
@@ -109,6 +110,7 @@ export class PianoRollOrchestrator {
   private prevScrollY = 0
   private prevTracksHash = ''
   private prevSelectedHash = ''
+  private prevTool: string = 'pointer'
 
   // --- Canvas 尺寸 ---
   private canvasWidth = 0
@@ -130,7 +132,13 @@ export class PianoRollOrchestrator {
   private handleMouseUpBind: (e: MouseEvent) => void
   private handleResizeBind: () => void
 
-  // --- 拖拽平移 ---
+  // --- 交互系统 ---
+  private mouseHandler!: MouseHandler
+
+  /** 当前被拖拽的音符 ID 集合（供 note 渲染层添加阴影） */
+  public draggingNoteIds: Set<string> = new Set()
+
+  // --- 拖拽平移（中键） ---
   private isPanning = false
   private panStartX = 0
   private panStartY = 0
@@ -184,6 +192,14 @@ export class PianoRollOrchestrator {
 
     // 初始化 mapper
     this.updateMapper()
+
+    // 初始化交互系统
+    this.mouseHandler = new MouseHandler(
+      store.getState.bind(store),
+      () => this.mapper,
+      container,
+      (state) => { this.interactionState = state },
+    )
 
     // 初始渲染
     this.dirtyGrid = true
@@ -319,6 +335,12 @@ export class PianoRollOrchestrator {
       this.prevSelectedHash = selectedHash
     }
 
+    // 检测工具切换 → 重置交互状态
+    if (state.activeTool !== this.prevTool) {
+      this.prevTool = state.activeTool
+      this.mouseHandler.reset()
+    }
+
     // 尺寸变化
     const rect = this.container.getBoundingClientRect()
     if (Math.abs(rect.width - this.canvasWidth) > 1 || Math.abs(rect.height - this.canvasHeight) > 1) {
@@ -404,6 +426,7 @@ export class PianoRollOrchestrator {
       tracks: state.tracks,
       allTracksNotes: allNotes,
       selectedNoteIds: selectedSet,
+      draggingNoteIds: this.draggingNoteIds,
       noteHeight: state.viewport.noteHeight,
     })
   }
@@ -505,33 +528,48 @@ export class PianoRollOrchestrator {
   // ============================================================
 
   private handleMouseDown(e: MouseEvent): void {
-    // 仅左键拖拽空白区域才触发平移
-    // 后续可加检测是否点在音符上
-    if (e.button !== 0) return
+    if (e.button === 1) {
+      // 中键 → 拖拽平移
+      this.isPanning = true
+      this.panStartX = e.clientX
+      this.panStartY = e.clientY
+      const state = this.getState()
+      this.panScrollX = state.viewport.scrollX
+      this.panScrollY = state.viewport.scrollY
+      return
+    }
 
-    this.isPanning = true
-    this.panStartX = e.clientX
-    this.panStartY = e.clientY
-    const state = this.getState()
-    this.panScrollX = state.viewport.scrollX
-    this.panScrollY = state.viewport.scrollY
+    if (e.button === 0) {
+      // 左键 → 交互系统
+      this.mouseHandler.handleMouseDown(e)
+    }
   }
 
   private handleMouseMove(e: MouseEvent): void {
-    if (!this.isPanning) return
+    if (this.isPanning) {
+      const dx = e.clientX - this.panStartX
+      const dy = e.clientY - this.panStartY
 
-    const dx = e.clientX - this.panStartX
-    const dy = e.clientY - this.panStartY
+      const state = this.getState()
+      state.setViewport({
+        scrollX: Math.max(0, this.panScrollX - dx),
+        scrollY: Math.max(0, this.panScrollY - dy),
+      })
+      return
+    }
 
-    const state = this.getState()
-    state.setViewport({
-      scrollX: Math.max(0, this.panScrollX - dx),
-      scrollY: Math.max(0, this.panScrollY - dy),
-    })
+    // 交互系统 mousemove
+    this.mouseHandler.handleMouseMove(e)
   }
 
   private handleMouseUp(_e: MouseEvent): void {
-    this.isPanning = false
+    if (this.isPanning) {
+      this.isPanning = false
+      return
+    }
+
+    // 交互系统 mouseup
+    this.mouseHandler.handleMouseUp(_e)
   }
 
   // ============================================================
