@@ -10,10 +10,6 @@ import { useRef, useEffect, useCallback } from 'react'
 import { useStore } from '@/state/store'
 import PianoRollCanvas from './PianoRollCanvas'
 
-// ============================================================
-// 样式
-// ============================================================
-
 const containerStyle: React.CSSProperties = {
   position: 'relative',
   flex: 1,
@@ -26,10 +22,13 @@ const scrollBarStyle: React.CSSProperties = {
   bottom: 0,
   left: 0,
   right: 0,
-  height: 14,
+  height: 6,
   overflowX: 'auto',
   overflowY: 'hidden',
   zIndex: 10,
+  background: 'var(--surface2, #2E2927)',
+  scrollbarWidth: 'thin',
+  scrollbarColor: 'var(--accent, #FF6E82) var(--surface2, #2E2927)',
 }
 
 const scrollBarTrackStyle: React.CSSProperties = {
@@ -37,8 +36,31 @@ const scrollBarTrackStyle: React.CSSProperties = {
 }
 
 // ============================================================
-// PianoRollView 组件
+// WebKit 滚动条 Merengue 样式
 // ============================================================
+
+let scrollbarCSSInjected = false
+function injectScrollbarCSS(): void {
+  if (scrollbarCSSInjected) return
+  scrollbarCSSInjected = true
+  const style = document.createElement('style')
+  style.textContent = `
+    .piano-roll-scrollbar::-webkit-scrollbar {
+      height: 6px;
+    }
+    .piano-roll-scrollbar::-webkit-scrollbar-track {
+      background: var(--surface2, #2E2927);
+    }
+    .piano-roll-scrollbar::-webkit-scrollbar-thumb {
+      background: var(--accent, #FF6E82);
+      border-radius: 3px;
+    }
+    .piano-roll-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #E54D62;
+    }
+  `
+  document.head.appendChild(style)
+}
 
 export default function PianoRollView(): JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -46,8 +68,9 @@ export default function PianoRollView(): JSX.Element {
   const setViewport = useStore((s) => s.setViewport)
   const scrollXRaw = useStore((s) => s.viewport.scrollX)
 
-  // 水平滚动条同步
-  const horizContentWidth = 100000 // 足够宽以允许滚动
+  useEffect(() => { injectScrollbarCSS() }, [])
+
+  const horizContentWidth = 100000
 
   const handleHorizScroll = useCallback(() => {
     const el = horizScrollRef.current
@@ -55,7 +78,6 @@ export default function PianoRollView(): JSX.Element {
     setViewport({ scrollX: el.scrollLeft })
   }, [setViewport])
 
-  // 双向同步：store.scrollX 变化 -> 更新滚动条位置
   useEffect(() => {
     const el = horizScrollRef.current
     if (!el) return
@@ -66,12 +88,10 @@ export default function PianoRollView(): JSX.Element {
 
   return (
     <div ref={containerRef} style={containerStyle}>
-      {/* 4 层 Canvas */}
       <PianoRollCanvas />
-
-      {/* 水平滚动条 */}
       <div
         ref={horizScrollRef}
+        className="piano-roll-scrollbar"
         style={scrollBarStyle}
         onScroll={handleHorizScroll}
       >
