@@ -1,0 +1,117 @@
+/* =========================================================
+   Merengue Design Tokens — 暗色模式（默认）
+   ========================================================= */
+
+:root {
+  /* ---- 色彩 ---- */
+  --background: #1A1819;
+  --bg: var(--background);
+  --surface1: #242223;
+  --surface2: #2E2927;
+  --surface3: #423B38;
+
+  --border: #2E2927;
+  --border-visible: #423B38;
+
+  --text1: #FAF9F8;
+  --text2: #A89D96;
+  --text3: #7A706A;
+  --text4: #5C5450;
+
+  --accent: #FF6E82;
+  --accent-subtle: #3D0D17;
+
+  --success: #4BC0A0;
+  --success-bg: #0F2E28;
+
+  --warning: #F4A742;
+  --warning-bg: #2E2412;
+
+  --error: #E5484D;
+  --error-bg: #2E1515;
+
+  /* ---- 字体 ---- */
+  --font-display: "Fredoka", "Segoe UI", "Noto Sans SC", sans-serif;
+  --font-body: "Nunito Sans", "Segoe UI", "Noto Sans SC", sans-serif;
+  --font-mono: "JetBrains Mono", "Consolas", "Courier New", monospace;
+
+  /* ---- 字号 ---- */
+  --text-display: 36px;
+  --text-h1: 28px;
+  --text-h2: 22px;
+  --text-h3: 18px;
+  --text-body: 14px;
+  --text-body-sm: 12px;
+  --text-caption: 11px;
+  --text-label: 10px;
+
+  /* ---- 间距 ---- */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* ---- 圆角 ---- */
+  --radius-element: 4px;
+  --radius-control: 8px;
+  --radius-component: 12px;
+  --radius-container: 16px;
+  --radius-pill: 999px;
+
+  /* ---- 缓动 ---- */
+  --ease-micro: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-standard: cubic-bezier(0.34, 1.3, 0.64, 1);
+  --ease-emphasis: cubic-bezier(0.32, 1.2, 0.64, 1);
+
+  /* ---- 时长 ---- */
+  --duration-micro: 150ms;
+  --duration-standard: 250ms;
+  --duration-emphasis: 400ms;
+
+  /* ---- 阴影 ---- */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.3);
+  --shadow-2: 0 2px 8px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2);
+  --shadow-3: 0 4px 16px rgba(0, 0, 0, 0.4), 0 8px 32px rgba(0, 0, 0, 0.3);
+
+  /* ---- 音符色板 ---- */
+  --note-coral: #FF5C72;
+  --note-tangerine: #FFB347;
+  --note-sky: #7EC8E3;
+  --note-lavender: #C3A6F4;
+  --note-mint: #4BC0A0;
+  --note-peach: #FF8A80;
+  --note-lemon: #FFE566;
+  --note-lilac: #D4A5F6;
+}
+
+/* =========================================================
+   亮色模式
+   ========================================================= */
+[data-theme="light"] {
+  --background: #FAF9F8;
+  --bg: var(--background);
+  --surface1: #F5F2F0;
+  --surface2: #E8E3DF;
+  --surface3: #D4CDC7;
+
+  --border: #E8E3DF;
+  --border-visible: #D4CDC7;
+
+  --text1: #242223;
+  --text2: #5C5450;
+  --text3: #7A706A;
+  --text4: #A89D96;
+
+  --accent: #FF5C72;
+  --accent-subtle: #FFF0F2;
+
+  --success-bg: #F0FDF6;
+  --warning-bg: #FFFBF0;
+  --error-bg: #FEF2F2;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-2: 0 2px 8px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+  --shadow-3: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 32px rgba(0, 0, 0, 0.04);
+}
