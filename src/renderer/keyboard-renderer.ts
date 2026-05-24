@@ -221,7 +221,8 @@ export class KeyboardRenderer {
     const range = computeVisiblePitchRange(scrollPos, viewportHeight, geo)
 
     for (let i = range.minWhiteIdx; i <= range.maxWhiteIdx; i++) {
-      const y = whiteKeyStart(i, geo)
+      const absY = whiteKeyStart(i, geo)
+      const y = absY - scrollPos
       const pitch = whiteIndexToPitch(i)
       const isC = pitch % 12 === 0
 
@@ -283,11 +284,13 @@ export class KeyboardRenderer {
       if (!isBlackKey(pitch)) continue
 
       const slotStart = keySlotStart(i, geo)
-      const visualY = slotStart + topOffset
-      // 视口裁剪：跳过不可见的黑键
-      if (visualY + visualHeight < scrollPos || visualY > scrollPos + viewportHeight) {
+      const absVisualY = slotStart + topOffset
+      // 视口裁剪：跳过不可见的黑键（在绝对坐标中判断）
+      if (absVisualY + visualHeight < scrollPos || absVisualY > scrollPos + viewportHeight) {
         continue
       }
+
+      const visualY = absVisualY - scrollPos
 
       // 渐变填充（每个黑键独立的垂直渐变）
       const gradient = ctx.createLinearGradient(
