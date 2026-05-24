@@ -6,11 +6,12 @@
  * 音高范围约束 21–108。
  */
 
-import type { Note } from '@/types'
 import type { ToolEventContext } from './pointer-tool'
 import { PITCH_MIN, PITCH_MAX } from '@/constants'
 import { clamp } from '@/utils/math'
 import { snapTick } from './snap-grid'
+import { undoManager } from '@/commands/undo-manager'
+import { AddNoteCommand } from '@/commands/add-note-command'
 
 // ============================================================
 // 内部状态
@@ -142,15 +143,15 @@ export class PencilToolHandler {
       }
     }
 
-    // 创建新音符
-    const newNote: Note = {
-      id: '',
+    // 通过 UndoManager 执行添加（AddNoteCommand 内部会生成 ID）
+    const newNote = {
       pitch: s.pitch,
       startTick: s.startTick,
       duration,
       velocity: 100,
     }
-    ctx.storeState.addNote(s.trackId, newNote)
+    const cmd = new AddNoteCommand(s.trackId, newNote, ctx.storeState)
+    undoManager.execute(cmd)
 
     // 清除交互状态
     ctx.setInteractionState({

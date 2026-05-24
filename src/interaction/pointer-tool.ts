@@ -16,6 +16,9 @@ import { PITCH_MIN, PITCH_MAX } from '@/constants'
 import { clamp } from '@/utils/math'
 import { snapTick } from './snap-grid'
 import { hitTest, computeNoteScreenRect } from './hit-test'
+import { undoManager } from '@/commands/undo-manager'
+import { MoveNotesCommand } from '@/commands/move-notes-command'
+import { ResizeNoteCommand } from '@/commands/resize-note-command'
 
 // ============================================================
 // 内部状态
@@ -225,9 +228,38 @@ export class PointerToolHandler {
     })
   }
 
-  private endDrag(_ctx: ToolEventContext): void {
-    // 拖拽结束 — 实时更新模式下已经写入 store，无需额外操作
-    // Task 11 会在此处创建 MoveNotesCommand
+  private endDrag(ctx: ToolEventContext): void {
+    const s = this.state as DragState
+
+    // 收集 old → new 状态
+    const moves: Array<{
+      noteId: string
+      trackId: string
+      oldStartTick: number
+      oldPitch: number
+      newStartTick: number
+      newPitch: number
+    }> = []
+
+    for (const orig of s.notes) {
+      const track = ctx.storeState.tracks.find((t) => t.id === orig.trackId)
+      if (!track) continue
+      const note = track.notes.find((n) => n.id === orig.noteId)
+      if (!note) continue
+
+      moves.push({
+        noteId: orig.noteId,
+        trackId: orig.trackId,
+        oldStartTick: orig.startTick,
+        oldPitch: orig.pitch,
+        newStartTick: note.startTick,
+        newPitch: note.pitch,
+      })
+    }
+
+    if (moves.length > 0) {
+      undoManager.execute(new MoveNotesCommand(moves, ctx.storeState))
+    }
   }
 
   // -------------------------------------------------------
@@ -291,8 +323,25 @@ export class PointerToolHandler {
     }
   }
 
-  private endResize(_ctx: ToolEventContext): void {
-    // Task 11 会创建 ResizeNoteCommand
+  private endResize(ctx: ToolEventContext): void {
+    const s = this.state as ResizeState
+
+    // 从 store 读取最终的 note 状态
+    const track = ctx.storeState.tracks.find((t) => t.id === s.trackId)
+    if (!track) return
+    const note = track.notes.find((n) => n.id === s.noteId)
+    if (!note) return
+
+    const cmd = new ResizeNoteCommand(
+      s.trackId,
+      s.noteId,
+      s.originalNote.startTick,
+      s.originalNote.duration,
+      note.startTick,
+      note.duration,
+      ctx.storeState,
+    )
+    undoManager.execute(cmd)
   }
 
   // -------------------------------------------------------

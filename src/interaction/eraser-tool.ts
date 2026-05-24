@@ -7,6 +7,8 @@
 
 import type { ToolEventContext } from './pointer-tool'
 import { hitTest } from './hit-test'
+import { undoManager } from '@/commands/undo-manager'
+import { DeleteNotesCommand } from '@/commands/delete-notes-command'
 
 export class EraserToolHandler {
   handleMouseDown(ctx: ToolEventContext): void {
@@ -22,15 +24,15 @@ export class EraserToolHandler {
 
     if (!hit) return
 
-    // 根据命中类型选择 noteId（body / leftEdge / rightEdge 都指向同一个 note）
-    const noteId = hit.noteId
-
     // 找到 note 所属的 track
     for (let i = 0; i < ctx.storeState.tracks.length; i++) {
       const track = ctx.storeState.tracks[i]
       if (!track) continue
-      if (track.notes.some((n) => n.id === noteId)) {
-        ctx.storeState.removeNote(track.id, noteId)
+      const found = track.notes.find((n) => n.id === hit.noteId)
+      if (found) {
+        // 通过 UndoManager 执行删除
+        const cmd = new DeleteNotesCommand(track.id, [found], ctx.storeState)
+        undoManager.execute(cmd)
         return
       }
     }

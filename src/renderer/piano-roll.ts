@@ -15,6 +15,7 @@ import { renderInteraction, type NotePreview, type SelectionRect, type GhostNote
 import { secondsToTick } from '@/model/time-convert'
 import { clamp } from '@/utils/math'
 import { MouseHandler } from '@/interaction/mouse-handler'
+import { undoManager } from '@/commands/undo-manager'
 
 // ============================================================
 // 常量
@@ -131,6 +132,7 @@ export class PianoRollOrchestrator {
   private handleMouseMoveBind: (e: MouseEvent) => void
   private handleMouseUpBind: (e: MouseEvent) => void
   private handleResizeBind: () => void
+  private handleKeyDownBind: (e: KeyboardEvent) => void
 
   // --- 交互系统 ---
   private mouseHandler!: MouseHandler
@@ -178,6 +180,7 @@ export class PianoRollOrchestrator {
     this.handleMouseMoveBind = this.handleMouseMove.bind(this)
     this.handleMouseUpBind = this.handleMouseUp.bind(this)
     this.handleResizeBind = this.handleResize.bind(this)
+    this.handleKeyDownBind = this.handleKeyDown.bind(this)
 
     // 注册事件
     this.container.addEventListener('wheel', this.handleWheelBind, { passive: false })
@@ -185,6 +188,7 @@ export class PianoRollOrchestrator {
     // mousemove / mouseup 挂在 document 上以免拖拽时超出容器丢失
     document.addEventListener('mousemove', this.handleMouseMoveBind)
     document.addEventListener('mouseup', this.handleMouseUpBind)
+    document.addEventListener('keydown', this.handleKeyDownBind)
     window.addEventListener('resize', this.handleResizeBind)
 
     // 初始化尺寸
@@ -228,6 +232,7 @@ export class PianoRollOrchestrator {
     this.container.removeEventListener('mousedown', this.handleMouseDownBind)
     document.removeEventListener('mousemove', this.handleMouseMoveBind)
     document.removeEventListener('mouseup', this.handleMouseUpBind)
+    document.removeEventListener('keydown', this.handleKeyDownBind)
     window.removeEventListener('resize', this.handleResizeBind)
   }
 
@@ -580,5 +585,22 @@ export class PianoRollOrchestrator {
     this.syncCanvasSize()
     this.dirtyGrid = true
     this.dirtyNotes = true
+  }
+
+  // ============================================================
+  // 11.8 键盘快捷键 — 撤销 / 重做
+  // ============================================================
+
+  private handleKeyDown(e: KeyboardEvent): void {
+    const isMod = e.ctrlKey || e.metaKey
+    if (!isMod) return
+
+    if (e.key === 'z' && !e.shiftKey) {
+      e.preventDefault()
+      undoManager.undo()
+    } else if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) {
+      e.preventDefault()
+      undoManager.redo()
+    }
   }
 }
