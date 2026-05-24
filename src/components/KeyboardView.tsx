@@ -33,6 +33,14 @@ export default function KeyboardView(): JSX.Element {
 
   const scrollY = useStore((s) => s.viewport.scrollY)
   const orientation = useStore((s) => s.orientation)
+  const setViewport = useStore((s) => s.setViewport)
+
+  // 从键盘高度推导 noteHeight 并同步到 store，确保 Piano Roll 行与键盘对齐
+  const syncNoteHeight = (keyboardHeight: number) => {
+    const whiteKeySize = keyboardHeight / 52
+    const noteHeight = whiteKeySize * 7 / 12
+    setViewport({ noteHeight })
+  }
 
   // ---- 初始化 ----
   useEffect(() => {
@@ -57,6 +65,7 @@ export default function KeyboardView(): JSX.Element {
       canvas.style.height = `${h}px`
     }
     updateCanvasSize()
+    syncNoteHeight(canvas.clientHeight || 400)
 
     const renderer = new KeyboardRenderer(canvas, {
       width: KEYBOARD_WIDTH,
@@ -76,6 +85,7 @@ export default function KeyboardView(): JSX.Element {
     // 监听容器尺寸变化
     const resizeObserver = new ResizeObserver(() => {
       updateCanvasSize()
+      syncNoteHeight(canvas.clientHeight || 400)
       renderer.updateOptions({
         width: KEYBOARD_WIDTH,
         height: canvas.clientHeight,
@@ -121,6 +131,7 @@ export default function KeyboardView(): JSX.Element {
       canvas.height = h * (window.devicePixelRatio || 1)
       canvas.style.width = `${KEYBOARD_WIDTH}px`
       canvas.style.height = `${h}px`
+      syncNoteHeight(h || 400)
     }
 
     renderer.updateOptions({
