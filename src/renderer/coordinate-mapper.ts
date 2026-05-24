@@ -35,6 +35,9 @@ export interface CoordinateMapper {
   /** 每行（一个半音）的像素高度，已包含 zoomY */
   noteHeight: number
 
+  /** 音高轴偏移量：对齐键盘顶部不完整八度（C8 独白键） */
+  pitchOffset: number
+
   /**
    * 将 tick 转换为时间轴上的像素位置（绝对坐标，不含 scroll）
    * - vertical:   X 轴
@@ -81,18 +84,25 @@ export function createCoordinateMapper(
   ppq: number,
 ): CoordinateMapper {
   const pixelsPerSec = BASE_PIXELS_PER_SECOND * Math.max(zoomX, 0.01)
+  // 音高轴偏移：键盘顶部 C8 是完整白键，但 Piano Roll 只分给它 noteHeight。
+  // 相差 whiteKeySize - noteHeight = noteHeight × (12/7 - 1) = noteHeight × 5/7。
+  // 加此偏移后 B7 Piano Roll 行起点 = 偏移 + noteHeight = whiteKeySize，与键盘对齐。
+  const pitchOffset = orientation === 'vertical'
+    ? noteHeight * (5 / 7)
+    : 0
 
   return {
     orientation,
     pixelsPerSecond: pixelsPerSec,
     noteHeight,
+    pitchOffset,
 
     tickToPixel: (tick: number): number => {
       return tickToSeconds(tick, tempoMap, ppq) * pixelsPerSec
     },
 
     pitchToPixel: (pitch: number): number => {
-      return (PITCH_MAX - pitch) * noteHeight
+      return (PITCH_MAX - pitch) * noteHeight + pitchOffset
     },
 
     pixelToTick: (pixel: number): number => {
@@ -101,7 +111,8 @@ export function createCoordinateMapper(
     },
 
     pixelToPitch: (pixel: number): number => {
-      const p = PITCH_MAX - Math.round(pixel / Math.max(noteHeight, EPSILON))
+      const adjustedPixel = pixel - pitchOffset
+      const p = PITCH_MAX - Math.round(adjustedPixel / Math.max(noteHeight, EPSILON))
       return Math.max(0, Math.min(127, p))
     },
   }
