@@ -10,7 +10,7 @@ import type { Note } from '@/types'
 import type { ToolEventContext } from './pointer-tool'
 import { PITCH_MIN, PITCH_MAX } from '@/constants'
 import { clamp } from '@/utils/math'
-import { snapTick, DEFAULT_GRID_SIZE } from './tools'
+import { snapTick } from './snap-grid'
 
 // ============================================================
 // 内部状态
@@ -44,7 +44,7 @@ export class PencilToolHandler {
 
     // 计算绝对吸附后的 tick 和 pitch
     const rawTick = ctx.mapper.pixelToTick(ctx.canvasX + ctx.scrollX)
-    const snappedTick = snapTick(rawTick, DEFAULT_GRID_SIZE)
+    const snappedTick = snapTick(rawTick, ctx.snapGridTicks)
     const pitch = clamp(
       ctx.mapper.pixelToPitch(ctx.canvasY + ctx.scrollY),
       PITCH_MIN,
@@ -99,7 +99,7 @@ export class PencilToolHandler {
     const deltaTick = currentTickAtMouse - s.startTickAtMouse
 
     // 时长 = 默认网格单位 + deltaTick（最小 1 tick）
-    const duration = Math.max(1, DEFAULT_GRID_SIZE + deltaTick)
+    const duration = Math.max(1, ctx.snapGridTicks + deltaTick)
 
     ctx.setInteractionState({
       notePreview: {
@@ -123,12 +123,12 @@ export class PencilToolHandler {
 
     if (Math.abs(ctx.canvasX - s.mouseDownX) < 3) {
       // 几乎没移动 → 点击添加，默认时长 = gridSize
-      duration = DEFAULT_GRID_SIZE
+      duration = ctx.snapGridTicks
     } else {
       // 拖拽了 → 用预览的时长
       const currentTickAtMouse = ctx.mapper.pixelToTick(ctx.canvasX + ctx.scrollX)
       const deltaTick = currentTickAtMouse - s.startTickAtMouse
-      duration = Math.max(1, DEFAULT_GRID_SIZE + deltaTick)
+      duration = Math.max(1, ctx.snapGridTicks + deltaTick)
     }
 
     // 再次检查是否有音符在目标位置（可能在拖拽期间被其他操作添加）

@@ -14,7 +14,7 @@ import type { CoordinateMapper } from '@/renderer/coordinate-mapper'
 import type { InteractionState } from '@/renderer/piano-roll'
 import { PITCH_MIN, PITCH_MAX } from '@/constants'
 import { clamp } from '@/utils/math'
-import { snapTick, DEFAULT_GRID_SIZE } from './tools'
+import { snapTick } from './snap-grid'
 import { hitTest, computeNoteScreenRect } from './hit-test'
 
 // ============================================================
@@ -203,8 +203,8 @@ export class PointerToolHandler {
     let deltaTick = currentTickAtMouse - s.startTickAtMouse
     const deltaPitch = currentPitchAtMouse - s.startPitchAtMouse
 
-    // 相对吸附
-    deltaTick = snapTick(deltaTick, DEFAULT_GRID_SIZE)
+    // 相对吸附（保留原始 offset）
+    deltaTick = snapTick(deltaTick, ctx.snapGridTicks)
 
     // 更新每个音符位置（直接写 store → note 层实时渲染）
     for (const orig of s.notes) {
@@ -367,5 +367,6 @@ export interface ToolEventContext {
   noteHeight: number
   storeState: StoreState
   allFlatNotes: ReadonlyArray<{ trackIndex: number; note: Note }>
+  snapGridTicks: number
   setInteractionState: (state: Pick<InteractionState, 'selectionRect' | 'ghostNotes' | 'notePreview'>) => void
 }

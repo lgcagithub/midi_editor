@@ -29,6 +29,8 @@ export interface EditorSlice {
   orientation: Orientation
   /** 视口状态 */
   viewport: ViewportState
+  /** 当前吸附网格间距（tick 数） */
+  snapGridTicks: number
 
   /** 设置当前工具 */
   setTool: (tool: ToolMode) => void
@@ -44,6 +46,8 @@ export interface EditorSlice {
   setOrientation: (orientation: Orientation) => void
   /** 更新视口（部分更新） */
   setViewport: (viewport: Partial<ViewportState>) => void
+  /** 设置吸附网格间距 */
+  setSnapGridTicks: (ticks: number) => void
 }
 
 export const createEditorSlice: StateCreator<EditorSlice, [], [], EditorSlice> = (
@@ -59,6 +63,7 @@ export const createEditorSlice: StateCreator<EditorSlice, [], [], EditorSlice> =
     zoomY: 1,
     noteHeight: 14,
   },
+  snapGridTicks: 120, // 默认 1/16 音符（PPQ=480 → 480/4=120）
 
   setTool: (tool) => set({ activeTool: tool }),
 
@@ -84,4 +89,6 @@ export const createEditorSlice: StateCreator<EditorSlice, [], [], EditorSlice> =
     set((state) => ({
       viewport: { ...state.viewport, ...viewport },
     })),
+
+  setSnapGridTicks: (ticks) => set({ snapGridTicks: ticks }),
 })

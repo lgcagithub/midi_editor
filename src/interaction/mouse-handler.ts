@@ -122,6 +122,7 @@ export class MouseHandler {
       noteHeight: storeState.viewport.noteHeight,
       storeState,
       allFlatNotes: flattenTrackNotes(storeState),
+      snapGridTicks: storeState.snapGridTicks,
       setInteractionState: (partial) => {
         this.setInteractionState({
           notePreview: partial.notePreview ?? null,

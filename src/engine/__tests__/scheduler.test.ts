@@ -97,6 +97,7 @@ function createTestStore(overrides?: Partial<StoreState>) {
     selectedNoteIds: [],
     orientation: 'vertical',
     viewport: { scrollX: 0, scrollY: 0, zoomX: 1, zoomY: 1, noteHeight: 14 },
+    snapGridTicks: 120,
     setTool: () => {},
     selectNote: () => {},
     deselectNote: () => {},
@@ -104,6 +105,7 @@ function createTestStore(overrides?: Partial<StoreState>) {
     setSelection: () => {},
     setOrientation: () => {},
     setViewport: () => {},
+    setSnapGridTicks: () => {},
 
     ...overrides,
   }))
