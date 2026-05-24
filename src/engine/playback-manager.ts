@@ -66,10 +66,18 @@ export function play(): void {
 
 export function pause(): void {
   transport?.pause()
+  // 立即停止所有正在发声的振荡器
+  if (audioCtx && oscBank) {
+    oscBank.stopAll(audioCtx.currentTime)
+  }
 }
 
 export function stop(): void {
   transport?.stop()
+  // 立即停止所有正在发声的振荡器
+  if (audioCtx && oscBank) {
+    oscBank.stopAll(audioCtx.currentTime)
+  }
 }
 
 export function getTransport(): Transport | null {

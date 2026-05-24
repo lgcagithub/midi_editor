@@ -55,6 +55,20 @@ export class OscillatorBank implements SoundSource {
     this.active.delete(pitch)
   }
 
+  /** 立即停止所有发声中的振荡器 */
+  stopAll(when: number): void {
+    for (const [_pitch, entry] of this.active) {
+      try {
+        entry.oscillator.stop(when)
+      } catch {
+        // 已停止，忽略
+      }
+      entry.oscillator.disconnect()
+      entry.gain.disconnect()
+    }
+    this.active.clear()
+  }
+
   setInstrument(_program: number): void {
     // 方波合成器不支持切换乐器
   }
