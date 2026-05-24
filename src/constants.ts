@@ -16,14 +16,8 @@ export const VELOCITY_MIN = 0
 /** 力度最大值 */
 export const VELOCITY_MAX = 127
 
-/** 88 键钢琴音高范围 */
-export const PIANO_KEYS: readonly number[] = (() => {
-  const keys: number[] = []
-  for (let i = PITCH_MIN; i <= PITCH_MAX; i++) {
-    keys.push(i)
-  }
-  return keys
-})()
+/** 88 键钢琴键数 */
+export const PIANO_KEYS = 88
 
 /** 8 轨默认颜色调色板 */
 export const TRACK_COLORS: readonly string[] = [
