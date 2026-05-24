@@ -185,7 +185,8 @@ export class KeyboardRenderer {
   private handleMouseDown(e: MouseEvent): void {
     const rect = this.canvas.getBoundingClientRect()
     const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
+    // canvas 屏幕坐标 → 键盘绝对坐标（绘制时减了 scrollPos，点击时加回来）
+    const y = e.clientY - rect.top + this.scrollPos
 
     const hit = detectKeyClick(x, y, this.geo)
     if (hit) {
