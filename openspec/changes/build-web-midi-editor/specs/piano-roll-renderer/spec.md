@@ -73,10 +73,10 @@
 
 系统 SHALL 在背景网格层绘制以下元素：
 
-- **小节线**：在 TimeSig 事件对应的小节边界处绘制（粗线或深色线）
-- **拍线**：每拍边界处绘制（中等粗细）
-- **细分网格线**：根据当前吸附网格级别绘制（最细线），间距随缩放比例动态调整
-- **行底色**：每行半音网格线，白键行底色略亮于黑键行底色
+- **小节线**：在 TimeSig 事件对应的小节边界处绘制，颜色 `--border-visible` (`#423B38`)，1px
+- **拍线**：每拍边界处绘制，颜色 `rgba(66,59,56,0.3)`
+- **细分网格线**：根据当前吸附网格级别绘制，颜色 `rgba(46,41,39,0.5)`，间距随缩放比例动态调整
+- **行底色**：每行半音网格线，白键行底色奇偶交替 `rgba(36,34,35,0.3)`；C 键行（`pitch % 12 === 0`）底线 `--border-visible` (`#423B38`) 略加深作八度视觉分隔
 
 #### Scenario: Grid lines at 4/4 time signature
 
@@ -90,20 +90,50 @@
 
 ### Requirement: Note rendering
 
-系统 SHALL 将每个可见音符绘制为圆角矩形条：
+系统 SHALL 将每个可见音符绘制为圆角矩形条，遵循以下视觉规格：
 
-- 填充颜色为该音符所属音轨的 `color` 属性
+- 填充颜色为该音符所属音轨的 `color` 属性（取自 8 轨糖果色板）
+- 圆角 3px
+- 顶边高光线 `1px solid rgba(255,255,255,0.2)`，底边 `1px solid rgba(0,0,0,0.2)`
 - 矩形的 x、y、width、height 由坐标映射函数计算
-- 被选中的音符 SHALL 以不同视觉方式呈现（如边框高亮或颜色变化）
+- `noteHeight`（行高）由键盘几何公式推导：`noteHeight = whiteKeySize × 7 / 12`，等于 88 键网格的半音间距
+- 音符透明度 0.55 — 1.0 映射 velocity 1 — 127
+- 音符宽度 < 3px 时降级为 1px 细线
+
+选中态：
+
+- `box-shadow: 0 0 0 2px var(--accent)` 外框
+- `inset 0 0 0 1px rgba(255,255,255,0.3)` 内高光
+
+拖拽态：
+
+- `box-shadow: 0 4px 12px rgba(0,0,0,0.3)` 浮起阴影
+
+#### Scenario: Render note with velocity mapped to opacity
+
+- **WHEN** 音符 velocity=64
+- **THEN** 音符透明度 ≈ (64-1)/(127-1) × 0.45 + 0.55 ≈ 0.775
 
 #### Scenario: Render selected note
 
 - **WHEN** 音符 `isSelected` 为 true
-- **THEN** 该音符矩形以高亮边框或加亮颜色绘制
+- **THEN** 该音符矩形渲染 2px 珊瑚色外框 + 白色内高光
+
+#### Scenario: Narrow note renders as line
+
+- **WHEN** 音符宽度 < 3px
+- **THEN** 该音符降级为 1px 竖线（纵向布局）或横线（横向布局）
 
 ### Requirement: Playback cursor
 
 系统 SHALL 在光标层绘制一条播放位置指示线（纵向布局时为竖线，横向布局时为横线），位置由 `transport.currentTick` 实时计算。
+
+视觉规格：
+
+- 颜色 `--accent` (`#FF6E82`)
+- 线宽 1px
+- 发光阴影 `box-shadow: 0 0 8px rgba(255,110,130,0.4)`
+- 顶部三角指示器（4px 等腰三角形，尖部指向当前 tick 方向，颜色同 `--accent`）
 
 光标位置通过 `requestAnimationFrame` 每帧独立推算：从 `AudioContext.currentTime` 开始，使用 `secondsToTick` 计算出当前的 tick，再映射到像素位置。
 
@@ -123,7 +153,7 @@
 
 - `scrollX`, `scrollY`: number — 视口左上角在逻辑坐标中的偏移（像素）
 - `zoomX`, `zoomY`: number — 横向和纵向缩放比例
-- `noteHeight`: number — 每个半音行的像素高度
+- `noteHeight`: number — 每个半音行的像素高度，等于 `whiteKeySize × 7 / 12`（88 键网格间距）
 
 缩放改变 `pixelsPerSecond` 和 `noteHeight`，滚动改变视口可见范围。
 
