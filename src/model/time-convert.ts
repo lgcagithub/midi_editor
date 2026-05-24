@@ -20,15 +20,15 @@ export function tickToSeconds(
 
   let seconds = 0
   let currentTick = 0
-  let lastBpm = tempoMap[0].bpm
+  let lastBpm = tempoMap[0]!.bpm
 
   for (let i = 0; i < tempoMap.length; i++) {
     // tempo 事件从它的 tick 位置开始生效
-    lastBpm = tempoMap[i].bpm
+    lastBpm = tempoMap[i]!.bpm
 
     // 当前段结束于下一个 tempo 事件的 tick 或目标 tick
     const segmentEndTick = i < tempoMap.length - 1
-      ? Math.min(tempoMap[i + 1].tick, targetTick)
+      ? Math.min(tempoMap[i + 1]!.tick, targetTick)
       : targetTick
 
     if (segmentEndTick > currentTick) {
@@ -77,25 +77,25 @@ export function secondsToTick(
 
   let accumulatedSeconds = 0
   let currentTick = startTick
-  let currentBpm = tempoMap[0].bpm
+  let currentBpm = tempoMap[0]!.bpm
 
   // 找到起始 tick 所在的 tempo 段
   let tempoIndex = 0
   for (let i = 0; i < tempoMap.length - 1; i++) {
-    if (tempoMap[i + 1].tick <= currentTick) {
+    if (tempoMap[i + 1]!.tick <= currentTick) {
       tempoIndex = i + 1
     } else {
       break
     }
   }
-  currentBpm = tempoMap[tempoIndex].bpm
+  currentBpm = tempoMap[tempoIndex]!.bpm
 
   // 遍历 tempo 段，累加时间直到达到 targetSeconds
   for (let i = tempoIndex; i < tempoMap.length; i++) {
-    currentBpm = tempoMap[i].bpm
+    currentBpm = tempoMap[i]!.bpm
 
     // 确定当前段结束 tick（下一个 tempo 事件或无穷大）
-    const segmentEndTick = i < tempoMap.length - 1 ? tempoMap[i + 1].tick : Infinity
+    const segmentEndTick = i < tempoMap.length - 1 ? tempoMap[i + 1]!.tick : Infinity
 
     // 当前段可用的 ticks
     const availableTicks = segmentEndTick === Infinity

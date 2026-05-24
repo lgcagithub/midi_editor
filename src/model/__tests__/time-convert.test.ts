@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { tickToSeconds, secondsToTick } from '../time-convert'
 import { TempoEvent } from '../../types'
-import { DEFAULT_PPQ, DEFAULT_BPM } from '../../constants'
 
 describe('tickToSeconds', () => {
   it('空 tempoMap 时使用默认 BPM（120）计算', () => {
