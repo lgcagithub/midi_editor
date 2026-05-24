@@ -85,6 +85,7 @@ export class KeyboardRenderer {
 
   /** 已绑定的事件处理器引用（用于清理） */
   private boundHandleMouseDown: (e: MouseEvent) => void
+  private boundHandleMouseMove: (e: MouseEvent) => void
   private boundHandleMouseUp: (e: MouseEvent) => void
   private boundHandleMouseLeave: (e: MouseEvent) => void
 
@@ -114,6 +115,7 @@ export class KeyboardRenderer {
 
     // 绑定事件处理器
     this.boundHandleMouseDown = this.handleMouseDown.bind(this)
+    this.boundHandleMouseMove = this.handleMouseMove.bind(this)
     this.boundHandleMouseUp = this.handleMouseUp.bind(this)
     this.boundHandleMouseLeave = this.handleMouseLeave.bind(this)
 
@@ -168,6 +170,7 @@ export class KeyboardRenderer {
   /** 销毁渲染器，移除事件监听 */
   dispose(): void {
     this.canvas.removeEventListener('mousedown', this.boundHandleMouseDown)
+    this.canvas.removeEventListener('mousemove', this.boundHandleMouseMove)
     this.canvas.removeEventListener('mouseup', this.boundHandleMouseUp)
     this.canvas.removeEventListener('mouseleave', this.boundHandleMouseLeave)
   }
@@ -178,6 +181,7 @@ export class KeyboardRenderer {
 
   private setupEvents(): void {
     this.canvas.addEventListener('mousedown', this.boundHandleMouseDown)
+    this.canvas.addEventListener('mousemove', this.boundHandleMouseMove)
     this.canvas.addEventListener('mouseup', this.boundHandleMouseUp)
     this.canvas.addEventListener('mouseleave', this.boundHandleMouseLeave)
   }
@@ -190,6 +194,22 @@ export class KeyboardRenderer {
 
     const hit = detectKeyClick(x, y, this.geo)
     if (hit) {
+      this.activePitch = hit.pitch
+      this.noteOn?.(hit.pitch)
+    }
+  }
+
+  private handleMouseMove(e: MouseEvent): void {
+    if (this.activePitch == null) return  // 未按下时不处理
+
+    const rect = this.canvas.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top + this.scrollPos
+
+    const hit = detectKeyClick(x, y, this.geo)
+    if (hit && hit.pitch !== this.activePitch) {
+      // 滑到了新琴键：停止旧音，触发新音
+      this.noteOff?.(this.activePitch)
       this.activePitch = hit.pitch
       this.noteOn?.(hit.pitch)
     }
