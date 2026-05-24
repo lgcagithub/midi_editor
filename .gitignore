@@ -18,6 +18,9 @@ build/
 *.swp
 *.swo
 
+# Brainstorming assets
+.superpowers/
+
 # OS
 .DS_Store
 Thumbs.db
