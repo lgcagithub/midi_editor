@@ -200,19 +200,16 @@ describe('computeKeyboardGeometry', () => {
 })
 
 describe('blackKeyVisualSize', () => {
-  it('视觉高度 = blackKeySize * 0.65', () => {
+  it('视觉高度 = blackKeySize（直接等于 88 键网格间距）', () => {
     const geo = computeKeyboardGeometry(0, 0, 80, 1040, 'vertical')
-    expect(blackKeyVisualSize(geo)).toBeCloseTo(geo.blackKeySize * 0.65, 10)
+    expect(blackKeyVisualSize(geo)).toBe(geo.blackKeySize)
   })
 })
 
 describe('blackKeyVisualTopOffset', () => {
-  it('顶部偏移使黑键居中偏上', () => {
+  it('视觉尺寸等于网格间距时偏移为 0', () => {
     const geo = computeKeyboardGeometry(0, 0, 80, 1040, 'vertical')
-    const visualHeight = blackKeyVisualSize(geo)
-    const totalOffset = geo.blackKeySize - visualHeight
-    // 偏上 = 35% 的空白在顶部
-    expect(blackKeyVisualTopOffset(geo)).toBeCloseTo(totalOffset * 0.35, 10)
+    expect(blackKeyVisualTopOffset(geo)).toBe(0)
   })
 })
 

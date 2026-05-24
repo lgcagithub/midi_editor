@@ -40,11 +40,6 @@ export interface KeyboardGeometry {
 /** 一个八度内的白键半音偏移量 (C, D, E, F, G, A, B) */
 const WHITE_SEMITONES = [0, 2, 4, 5, 7, 9, 11] as const
 
-/** 黑键视觉高度占比（相对于黑键行高） */
-const BLACK_KEY_VISUAL_RATIO = 0.65
-
-/** 黑键在行内的顶部偏移占比（剩余空间的百分比，偏上=小数值） */
-const BLACK_KEY_TOP_OFFSET_RATIO = 0.35
 
 /** 黑键横向（交叉轴）宽度占比 */
 const BLACK_KEY_CROSS_RATIO = 0.65
@@ -172,17 +167,17 @@ export function computeKeyboardGeometry(
 }
 
 /**
- * 获取黑键视觉尺寸（沿主轴方向）
+ * 获取黑键视觉尺寸（沿主轴方向），直接等于 88 键网格间距
  */
 export function blackKeyVisualSize(geo: KeyboardGeometry): number {
-  return geo.blackKeySize * BLACK_KEY_VISUAL_RATIO
+  return geo.blackKeySize
 }
 
 /**
- * 获取黑键在行内的视觉顶部偏移（偏上定位）
+ * 获取黑键在行内的视觉顶部偏移
  */
-export function blackKeyVisualTopOffset(geo: KeyboardGeometry): number {
-  return (geo.blackKeySize - blackKeyVisualSize(geo)) * BLACK_KEY_TOP_OFFSET_RATIO
+export function blackKeyVisualTopOffset(_geo: KeyboardGeometry): number {
+  return 0
 }
 
 /**
