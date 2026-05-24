@@ -32,6 +32,7 @@ export default function KeyboardView(): JSX.Element {
   const audioCtxRef = useRef<AudioContext | null>(null)
 
   const scrollY = useStore((s) => s.viewport.scrollY)
+  const orientation = useStore((s) => s.orientation)
 
   // ---- 初始化 ----
   useEffect(() => {
@@ -60,7 +61,7 @@ export default function KeyboardView(): JSX.Element {
     const renderer = new KeyboardRenderer(canvas, {
       width: KEYBOARD_WIDTH,
       height: canvas.clientHeight || 400,
-      orientation: 'vertical',
+      orientation: orientation,
       noteOn: (pitch: number) => {
         resumeAudioContext(audioCtx)
         oscBank.noteOn(pitch, 100, audioCtx.currentTime + 0.01)
@@ -78,6 +79,7 @@ export default function KeyboardView(): JSX.Element {
       renderer.updateOptions({
         width: KEYBOARD_WIDTH,
         height: canvas.clientHeight,
+        orientation,
       })
       renderer.render()
     })
@@ -103,6 +105,31 @@ export default function KeyboardView(): JSX.Element {
     renderer.setScrollPos(scrollY)
     renderer.render()
   }, [scrollY])
+
+  // ---- 方向变化时重建渲染器 ----
+  useEffect(() => {
+    const renderer = rendererRef.current
+    const canvas = canvasRef.current
+    const container = containerRef.current
+    if (!renderer || !canvas || !container) return
+
+    // 更新 canvas 尺寸
+    const parent = container.parentElement
+    if (parent) {
+      const h = parent.clientHeight
+      canvas.width = KEYBOARD_WIDTH * (window.devicePixelRatio || 1)
+      canvas.height = h * (window.devicePixelRatio || 1)
+      canvas.style.width = `${KEYBOARD_WIDTH}px`
+      canvas.style.height = `${h}px`
+    }
+
+    renderer.updateOptions({
+      width: KEYBOARD_WIDTH,
+      height: canvas.clientHeight || 400,
+      orientation,
+    })
+    renderer.render()
+  }, [orientation])
 
   return (
     <div

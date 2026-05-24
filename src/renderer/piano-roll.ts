@@ -12,7 +12,6 @@ import { renderGrid } from './grid-renderer'
 import { renderNotes } from './note-renderer'
 import { renderCursor } from './cursor-renderer'
 import { renderInteraction, type NotePreview, type SelectionRect, type GhostNote } from './interaction-renderer'
-import { secondsToTick } from '@/model/time-convert'
 import { clamp } from '@/utils/math'
 import { MouseHandler } from '@/interaction/mouse-handler'
 import { undoManager } from '@/commands/undo-manager'
@@ -49,14 +48,13 @@ export interface TickProvider {
 }
 
 // ============================================================
-// 工具 —— 基于 store state 推算当前 tick
+// 读取当前 tick —— 由 Scheduler 更新到 store.currentTick
 // ============================================================
 
 function computeCurrentTick(state: StoreState): number {
-  if (state.transportState !== 'playing') return state.currentTick
-  const elapsed = (performance.now() - state.startTime) / 1000 // seconds
-  if (elapsed < 0) return state.startTick
-  return secondsToTick(elapsed, state.tempoMap, state.ppq, state.startTick)
+  // Scheduler 在 25ms 循环中基于 audioCtx.currentTime 推算并写入
+  // store.currentTick；这里直接读取以免跨时钟域 (performance.now vs audioCtx)
+  return state.currentTick
 }
 
 // ============================================================

@@ -12,6 +12,7 @@ import TransportBar from '@/components/TransportBar'
 import PianoRollView from '@/components/PianoRollView'
 import KeyboardView from '@/components/KeyboardView'
 import TrackList from '@/components/TrackList'
+import { initPlayback, destroyPlayback } from '@/engine/playback-manager'
 
 // ============================================================
 // 样式
@@ -70,6 +71,14 @@ export default function App(): JSX.Element {
       setActiveTrackId(tracks[0]!.id)
     }
   }, [tracks, activeTrackId, setActiveTrackId])
+
+  // 初始化播放引擎（Transport / Scheduler / OscillatorBank）
+  useEffect(() => {
+    initPlayback(useStore)
+    return () => {
+      destroyPlayback()
+    }
+  }, [])
 
   return (
     <div style={appStyle}>

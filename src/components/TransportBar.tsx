@@ -8,6 +8,7 @@
 import { useStore } from '@/state/store'
 import GridSelector from './GridSelector'
 import { tickToSeconds } from '@/model/time-convert'
+import { play as playbackPlay, pause as playbackPause, stop as playbackStop } from '@/engine/playback-manager'
 
 // ============================================================
 // 常量
@@ -114,9 +115,6 @@ export default function TransportBar(): JSX.Element {
   const currentTick = useStore((s) => s.currentTick)
   const ppq = useStore((s) => s.ppq)
   const tempoMap = useStore((s) => s.tempoMap)
-  const play = useStore((s) => s.play)
-  const pause = useStore((s) => s.pause)
-  const stop = useStore((s) => s.stop)
 
   const isPlaying = transportState === 'playing'
   const isPaused = transportState === 'paused'
@@ -126,29 +124,27 @@ export default function TransportBar(): JSX.Element {
 
   const handlePlayPause = () => {
     if (isPlaying) {
-      pause()
+      playbackPause()
     } else {
-      play()
+      playbackPlay()
     }
   }
 
   const handleStop = () => {
-    stop()
+    playbackStop()
   }
 
   const handleSkipBack = () => {
     const state = useStore.getState()
     const newTick = Math.max(0, state.currentTick - SKIP_TICKS)
-    useStore.getState().stop()
-    // 需要直接设置 currentTick——通过 transport slice 扩展或手动
-    // 直接使用 set 操作 store
+    playbackStop()
     useStore.setState({ currentTick: newTick })
   }
 
   const handleSkipForward = () => {
     const state = useStore.getState()
     const newTick = state.currentTick + SKIP_TICKS
-    useStore.getState().stop()
+    playbackStop()
     useStore.setState({ currentTick: newTick })
   }
 

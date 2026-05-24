@@ -113,6 +113,14 @@ export default function Toolbar(): JSX.Element {
     setViewport({ zoomX: newZoom })
   }, [viewport.zoomX, setViewport])
 
+  // ---- 方向切换 ----
+  const orientation = useStore((s) => s.orientation)
+  const setOrientation = useStore((s) => s.setOrientation)
+
+  const handleToggleOrientation = useCallback(() => {
+    setOrientation(orientation === 'vertical' ? 'horizontal' : 'vertical')
+  }, [orientation, setOrientation])
+
   // ---- 文件加载 ----
   const handleLoadClick = useCallback(() => {
     fileInputRef.current?.click()
@@ -211,6 +219,19 @@ export default function Toolbar(): JSX.Element {
           title="放大"
         >
           <i className="ph-duotone ph-magnifying-glass-plus" />
+        </button>
+      </div>
+
+      <div style={separatorStyle} />
+
+      {/* 方向切换 */}
+      <div style={groupStyle}>
+        <button
+          style={{ ...btnBase, borderRadius: '6px', border: '1px solid var(--border, #2E2927)' }}
+          onClick={handleToggleOrientation}
+          title={orientation === 'vertical' ? '切换到横向布局' : '切换到纵向布局'}
+        >
+          <i className={`ph-duotone ${orientation === 'vertical' ? 'ph-arrows-out-cardinal' : 'ph-arrows-in-cardinal'}`} />
         </button>
       </div>
 
