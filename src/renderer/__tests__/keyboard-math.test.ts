@@ -1,0 +1,365 @@
+import { describe, it, expect } from 'vitest'
+import {
+  whiteIndexToPitch,
+  pitchToWhiteIndex,
+  computeKeyboardGeometry,
+  blackKeyVisualSize,
+  blackKeyVisualTopOffset,
+  keySlotStart,
+  whiteKeyStart,
+  computeVisiblePitchRange,
+  detectKeyClick,
+  pitchLabel,
+  musicalOctaveOf,
+  pitchClassName,
+} from '../keyboard-math'
+import { PITCH_MIN, PITCH_MAX } from '../../constants'
+
+// ============================================================
+// 7.1 — 白键索引 ↔ MIDI 音高
+// ============================================================
+
+describe('whiteIndexToPitch', () => {
+  it('白键索引 0 = A0 (pitch 21)', () => {
+    expect(whiteIndexToPitch(0)).toBe(21)
+  })
+
+  it('白键索引 1 = B0 (pitch 23)', () => {
+    expect(whiteIndexToPitch(1)).toBe(23)
+  })
+
+  it('白键索引 2 = C1 (pitch 24)', () => {
+    expect(whiteIndexToPitch(2)).toBe(24)
+  })
+
+  it('白键索引 3 = D1 (pitch 26)', () => {
+    expect(whiteIndexToPitch(3)).toBe(26)
+  })
+
+  it('白键索引 4 = E1 (pitch 28)', () => {
+    expect(whiteIndexToPitch(4)).toBe(28)
+  })
+
+  it('白键索引 5 = F1 (pitch 29)', () => {
+    expect(whiteIndexToPitch(5)).toBe(29)
+  })
+
+  it('白键索引 6 = G1 (pitch 31)', () => {
+    expect(whiteIndexToPitch(6)).toBe(31)
+  })
+
+  it('白键索引 7 = A1 (pitch 33)', () => {
+    expect(whiteIndexToPitch(7)).toBe(33)
+  })
+
+  it('白键索引 8 = B1 (pitch 35)', () => {
+    expect(whiteIndexToPitch(8)).toBe(35)
+  })
+
+  it('白键索引 9 = C2 (pitch 36)', () => {
+    expect(whiteIndexToPitch(9)).toBe(36)
+  })
+
+  it('白键索引 51 = C8 (pitch 108)', () => {
+    expect(whiteIndexToPitch(51)).toBe(108)
+  })
+
+  it('八度 1-7 每个八度 7 个白键（C→B）', () => {
+    // 八度 1 的 C1...B1
+    expect(whiteIndexToPitch(2)).toBe(24)   // C1
+    expect(whiteIndexToPitch(3)).toBe(26)   // D1
+    expect(whiteIndexToPitch(4)).toBe(28)   // E1
+    expect(whiteIndexToPitch(5)).toBe(29)   // F1
+    expect(whiteIndexToPitch(6)).toBe(31)   // G1
+    expect(whiteIndexToPitch(7)).toBe(33)   // A1
+    expect(whiteIndexToPitch(8)).toBe(35)   // B1
+
+    // 八度 2 的 C2...B2
+    expect(whiteIndexToPitch(9)).toBe(36)   // C2
+    expect(whiteIndexToPitch(10)).toBe(38)  // D2
+    expect(whiteIndexToPitch(11)).toBe(40)  // E2
+    expect(whiteIndexToPitch(12)).toBe(41)  // F2
+    expect(whiteIndexToPitch(13)).toBe(43)  // G2
+    expect(whiteIndexToPitch(14)).toBe(45)  // A2
+    expect(whiteIndexToPitch(15)).toBe(47)  // B2
+
+    // 八度 7 的 C7...B7
+    expect(whiteIndexToPitch(44)).toBe(96)  // C7
+    expect(whiteIndexToPitch(45)).toBe(98)  // D7
+    expect(whiteIndexToPitch(46)).toBe(100) // E7
+    expect(whiteIndexToPitch(47)).toBe(101) // F7
+    expect(whiteIndexToPitch(48)).toBe(103) // G7
+    expect(whiteIndexToPitch(49)).toBe(105) // A7
+    expect(whiteIndexToPitch(50)).toBe(107) // B7
+  })
+
+  it('越界索引返回边界音高', () => {
+    expect(whiteIndexToPitch(-1)).toBe(PITCH_MIN)
+    expect(whiteIndexToPitch(52)).toBe(PITCH_MAX)
+    expect(whiteIndexToPitch(100)).toBe(PITCH_MAX)
+  })
+})
+
+describe('pitchToWhiteIndex', () => {
+  it('A0 (pitch=21) 对应白键索引 0', () => {
+    expect(pitchToWhiteIndex(21)).toBe(0)
+  })
+
+  it('A#0 (pitch=22) 对应白键索引 0（与 A0 同槽）', () => {
+    expect(pitchToWhiteIndex(22)).toBe(0)
+  })
+
+  it('B0 (pitch=23) 对应白键索引 1', () => {
+    expect(pitchToWhiteIndex(23)).toBe(1)
+  })
+
+  it('C1 (pitch=24) 对应白键索引 2', () => {
+    expect(pitchToWhiteIndex(24)).toBe(2)
+  })
+
+  it('C#1 (pitch=25) 对应白键索引 2（与 C1 同槽）', () => {
+    expect(pitchToWhiteIndex(25)).toBe(2)
+  })
+
+  it('D1 (pitch=26) 对应白键索引 3', () => {
+    expect(pitchToWhiteIndex(26)).toBe(3)
+  })
+
+  it('C4 (pitch=60) 对应白键索引', () => {
+    const idx = pitchToWhiteIndex(60)
+    // 计数: A0,B0 + octaves 1-3 full (7*3) + C=1 = 2+21+1=24, 索引 = 23
+    expect(idx).toBe(23)
+  })
+
+  it('C8 (pitch=108) 对应白键索引 51', () => {
+    expect(pitchToWhiteIndex(108)).toBe(51)
+  })
+
+  it('所有白键音高满足 pitchToWhiteIndex ∘ whiteIndexToPitch 恒等', () => {
+    for (let idx = 0; idx < 52; idx++) {
+      const pitch = whiteIndexToPitch(idx)
+      expect(pitchToWhiteIndex(pitch)).toBe(idx)
+    }
+  })
+
+  it('黑键音高映射到前一个白键索引', () => {
+    // C#4 (61) → 与 C4 (60) 相同白键索引
+    expect(pitchToWhiteIndex(61)).toBe(pitchToWhiteIndex(60))
+    // F#4 (66) → 与 F4 (65) 相同白键索引
+    expect(pitchToWhiteIndex(66)).toBe(pitchToWhiteIndex(65))
+    // A#4 (70) → 与 A4 (69) 相同白键索引
+    expect(pitchToWhiteIndex(70)).toBe(pitchToWhiteIndex(69))
+  })
+
+  it('越界音高返回边界白键索引', () => {
+    expect(pitchToWhiteIndex(0)).toBe(0)
+    expect(pitchToWhiteIndex(127)).toBe(51)
+    expect(pitchToWhiteIndex(20)).toBe(0)
+    expect(pitchToWhiteIndex(109)).toBe(51)
+  })
+})
+
+// ============================================================
+// 7.2 — 几何计算
+// ============================================================
+
+describe('computeKeyboardGeometry', () => {
+  const areaX = 0
+  const areaY = 0
+  const areaWidth = 80
+  const areaHeight = 1040
+
+  it('垂直布局计算白键高度 = areaHeight / 52', () => {
+    const geo = computeKeyboardGeometry(areaX, areaY, areaWidth, areaHeight, 'vertical')
+    expect(geo.whiteKeySize).toBe(areaHeight / 52)
+  })
+
+  it('垂直布局计算黑键行高 = whiteKeySize * 7 / 12', () => {
+    const geo = computeKeyboardGeometry(areaX, areaY, areaWidth, areaHeight, 'vertical')
+    const expectedBlack = (areaHeight / 52) * 7 / 12
+    expect(geo.blackKeySize).toBeCloseTo(expectedBlack, 10)
+  })
+
+  it('垂直布局 keyOffset 不为 0', () => {
+    const geo = computeKeyboardGeometry(areaX, areaY, areaWidth, areaHeight, 'vertical')
+    // keyOffset 应该略大于 areaY
+    expect(geo.keyOffset).toBeGreaterThan(areaY)
+  })
+
+  it('水平布局计算白键宽度 = areaWidth / 52', () => {
+    const geo = computeKeyboardGeometry(areaX, areaY, areaWidth, areaHeight, 'horizontal')
+    expect(geo.whiteKeySize).toBe(areaWidth / 52)
+  })
+
+  it('几何参数中 orientation 被正确记录', () => {
+    const vertical = computeKeyboardGeometry(areaX, areaY, areaWidth, areaHeight, 'vertical')
+    const horizontal = computeKeyboardGeometry(areaX, areaY, areaWidth, areaHeight, 'horizontal')
+    expect(vertical.orientation).toBe('vertical')
+    expect(horizontal.orientation).toBe('horizontal')
+  })
+})
+
+describe('blackKeyVisualSize', () => {
+  it('视觉高度 = blackKeySize * 0.65', () => {
+    const geo = computeKeyboardGeometry(0, 0, 80, 1040, 'vertical')
+    expect(blackKeyVisualSize(geo)).toBeCloseTo(geo.blackKeySize * 0.65, 10)
+  })
+})
+
+describe('blackKeyVisualTopOffset', () => {
+  it('顶部偏移使黑键居中偏上', () => {
+    const geo = computeKeyboardGeometry(0, 0, 80, 1040, 'vertical')
+    const visualHeight = blackKeyVisualSize(geo)
+    const totalOffset = geo.blackKeySize - visualHeight
+    // 偏上 = 35% 的空白在顶部
+    expect(blackKeyVisualTopOffset(geo)).toBeCloseTo(totalOffset * 0.35, 10)
+  })
+})
+
+describe('keySlotStart / whiteKeyStart', () => {
+  it('keySlotStart 返回 88 键网格中指定索引的起始位置', () => {
+    const geo = computeKeyboardGeometry(0, 0, 80, 1040, 'vertical')
+    // A0 = key 0
+    const a0Start = keySlotStart(0, geo)
+    expect(a0Start).toBe(geo.keyOffset)
+    // A#0 = key 1
+    const aSharp0Start = keySlotStart(1, geo)
+    expect(aSharp0Start).toBeCloseTo(geo.keyOffset + geo.blackKeySize, 10)
+  })
+
+  it('whiteKeyStart 返回指定白键的起始位置', () => {
+    const geo = computeKeyboardGeometry(0, 0, 80, 1040, 'vertical')
+    expect(whiteKeyStart(0, geo)).toBe(geo.y)
+    expect(whiteKeyStart(1, geo)).toBeCloseTo(geo.y + geo.whiteKeySize, 10)
+  })
+})
+
+// ============================================================
+// 7.5 — 视口裁剪
+// ============================================================
+
+describe('computeVisiblePitchRange', () => {
+  it('滚动 0 时从第一个白键开始', () => {
+    const geo = computeKeyboardGeometry(0, 0, 80, 1040, 'vertical')
+    const range = computeVisiblePitchRange(0, 1040, geo)
+    expect(range.minWhiteIdx).toBe(0)
+    expect(range.minPitch).toBe(PITCH_MIN)
+  })
+
+  it('视口高度 0 时最小和最大索引相等', () => {
+    const geo = computeKeyboardGeometry(0, 0, 80, 1040, 'vertical')
+    const range = computeVisiblePitchRange(0, 0, geo)
+    expect(range.minWhiteIdx).toBe(range.maxWhiteIdx)
+  })
+
+  it('大幅滚动后可见范围在高音区', () => {
+    const geo = computeKeyboardGeometry(0, 0, 80, 1040, 'vertical')
+    // 滚动到最后一个白键附近
+    const farScroll = geo.whiteKeySize * 40
+    const range = computeVisiblePitchRange(farScroll, 1040, geo)
+    expect(range.minWhiteIdx).toBeGreaterThanOrEqual(40)
+    expect(range.maxWhiteIdx).toBe(51)
+  })
+})
+
+// ============================================================
+// 7.6 — 点击检测
+// ============================================================
+
+describe('detectKeyClick', () => {
+  const areaX = 0
+  const areaY = 0
+  const areaWidth = 80
+  const areaHeight = 1040
+  const geo = computeKeyboardGeometry(areaX, areaY, areaWidth, areaHeight, 'vertical')
+
+  it('在键盘区域内点击空白区域返回 null', () => {
+    // 在键盘区域之外
+    const result = detectKeyClick(-1, 50, geo)
+    expect(result).toBeNull()
+  })
+
+  it('点击白键区域返回正确的白键音高', () => {
+    // 点击第一个白键 (A0) 的中间区域
+    const y = geo.y + geo.whiteKeySize / 2
+    const x = geo.x + geo.width / 2  // 白键区（非黑键交叉区）
+    const result = detectKeyClick(x, y, geo)
+    expect(result).not.toBeNull()
+    expect(result!.keyType).toBe('white')
+    expect(result!.pitch).toBe(21)  // A0
+  })
+
+  it('点击第一个白键的左侧区域且不在黑键视觉范围内时返回白键', () => {
+    const y = geo.y + 10
+    const result = detectKeyClick(geo.x + 5, y, geo)
+    // A0 不是黑键，所以 A#0 的黑键在第一个白键区域内
+    // 但 A#0 黑键只覆盖前 65% 宽度
+    // 点击 y=10 应该在 A0 白键范围内
+    if (result) {
+      expect(result.keyType).toBe('white')
+      expect(result.pitch).toBe(21)
+    }
+  })
+
+  it('点击 C4 白键区域返回正确音高', () => {
+    const c4WhiteIdx = pitchToWhiteIndex(60)
+    const y = geo.y + geo.whiteKeySize * c4WhiteIdx + geo.whiteKeySize / 2
+    const result = detectKeyClick(geo.x + geo.width / 2, y, geo)
+    expect(result).not.toBeNull()
+    expect(result!.pitch).toBe(60)
+    expect(result!.keyType).toBe('white')
+  })
+
+  it('边界外点击返回 null', () => {
+    expect(detectKeyClick(-1, 0, geo)).toBeNull()
+    expect(detectKeyClick(0, -1, geo)).toBeNull()
+    expect(detectKeyClick(geo.width, 0, geo)).toBeNull()
+    expect(detectKeyClick(0, geo.height, geo)).toBeNull()
+  })
+})
+
+// ============================================================
+// 辅助工具测试
+// ============================================================
+
+describe('musicalOctaveOf', () => {
+  it('C4 (pitch=60) 八度号为 4', () => {
+    expect(musicalOctaveOf(60)).toBe(4)
+  })
+
+  it('A0 (pitch=21) 八度号为 0', () => {
+    expect(musicalOctaveOf(21)).toBe(0)
+  })
+
+  it('C8 (pitch=108) 八度号为 8', () => {
+    expect(musicalOctaveOf(108)).toBe(8)
+  })
+})
+
+describe('pitchClassName', () => {
+  it('C (pitch=60) 名称为 "C"', () => {
+    expect(pitchClassName(60)).toBe('C')
+  })
+
+  it('C# (pitch=61) 名称为 "C#"', () => {
+    expect(pitchClassName(61)).toBe('C#')
+  })
+
+  it('A (pitch=69) 名称为 "A"', () => {
+    expect(pitchClassName(69)).toBe('A')
+  })
+})
+
+describe('pitchLabel', () => {
+  it('pitch=60 标签为 "C4"', () => {
+    expect(pitchLabel(60)).toBe('C4')
+  })
+
+  it('pitch=21 标签为 "A0"', () => {
+    expect(pitchLabel(21)).toBe('A0')
+  })
+
+  it('pitch=108 标签为 "C8"', () => {
+    expect(pitchLabel(108)).toBe('C8')
+  })
+})
