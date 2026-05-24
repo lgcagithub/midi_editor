@@ -37,6 +37,7 @@ function createMockStore(initialNotes: Note[] = []): StoreState {
     tempoMap: [],
     timeSigs: [],
     activeTool: 'pointer',
+    activeTrackId: 'track-1',
     selectedNoteIds: [],
     orientation: 'vertical',
     viewport: { scrollX: 0, scrollY: 0, zoomX: 1, zoomY: 1, noteHeight: 14 },
@@ -80,6 +81,7 @@ function createMockStore(initialNotes: Note[] = []): StoreState {
 
     // --- Editor ---
     setTool: () => {},
+    setActiveTrackId: () => {},
     selectNote: () => {},
     deselectNote: () => {},
     clearSelection: () => {},

@@ -23,6 +23,8 @@ export interface ViewportState {
 export interface EditorSlice {
   /** 当前激活工具 */
   activeTool: ToolMode
+  /** 当前激活音轨 ID */
+  activeTrackId: string
   /** 选中的音符 ID 列表 */
   selectedNoteIds: string[]
   /** 方向 */
@@ -34,6 +36,8 @@ export interface EditorSlice {
 
   /** 设置当前工具 */
   setTool: (tool: ToolMode) => void
+  /** 设置当前激活音轨 */
+  setActiveTrackId: (trackId: string) => void
   /** 选中音符（追加） */
   selectNote: (noteId: string) => void
   /** 取消选中音符 */
@@ -54,6 +58,7 @@ export const createEditorSlice: StateCreator<EditorSlice, [], [], EditorSlice> =
   set,
 ) => ({
   activeTool: 'pointer',
+  activeTrackId: '',
   selectedNoteIds: [],
   orientation: 'vertical',
   viewport: {
@@ -66,6 +71,8 @@ export const createEditorSlice: StateCreator<EditorSlice, [], [], EditorSlice> =
   snapGridTicks: 120, // 默认 1/16 音符（PPQ=480 → 480/4=120）
 
   setTool: (tool) => set({ activeTool: tool }),
+
+  setActiveTrackId: (trackId) => set({ activeTrackId: trackId }),
 
   selectNote: (noteId) =>
     set((state) => ({
