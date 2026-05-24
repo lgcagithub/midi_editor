@@ -215,7 +215,11 @@ export function blackKeyCrossStart(geo: KeyboardGeometry): number {
  * @returns 沿主轴的位置坐标
  */
 export function keySlotStart(keyIndex: number, geo: KeyboardGeometry): number {
-  return geo.keyOffset + geo.blackKeySize * keyIndex
+  if (geo.orientation === 'horizontal') {
+    return geo.keyOffset + geo.blackKeySize * keyIndex
+  }
+  // 垂直布局：高音(C8)在顶部，低音(A0)在底部
+  return geo.keyOffset + geo.blackKeySize * (87 - keyIndex)
 }
 
 /**
@@ -225,7 +229,11 @@ export function keySlotStart(keyIndex: number, geo: KeyboardGeometry): number {
  * @returns 沿主轴的位置坐标
  */
 export function whiteKeyStart(whiteIdx: number, geo: KeyboardGeometry): number {
-  return geo.y + geo.whiteKeySize * whiteIdx
+  if (geo.orientation === 'horizontal') {
+    return geo.y + geo.whiteKeySize * whiteIdx
+  }
+  // 垂直布局：高音(C8)在顶部，低音(A0)在底部
+  return geo.y + geo.whiteKeySize * (WHITE_KEY_COUNT - 1 - whiteIdx)
 }
 
 /**
@@ -262,14 +270,28 @@ export function computeVisiblePitchRange(
   viewportSize: number,
   geo: KeyboardGeometry,
 ): VisiblePitchRange {
-  const firstVisible = Math.max(0, Math.floor(scrollPos / geo.whiteKeySize))
-  const lastVisible = Math.min(WHITE_KEY_COUNT - 1, Math.ceil((scrollPos + viewportSize) / geo.whiteKeySize))
+  if (geo.orientation === 'horizontal') {
+    const firstVisible = Math.max(0, Math.floor(scrollPos / geo.whiteKeySize))
+    const lastVisible = Math.min(WHITE_KEY_COUNT - 1, Math.ceil((scrollPos + viewportSize) / geo.whiteKeySize))
+    return {
+      minPitch: whiteIndexToPitch(firstVisible),
+      maxPitch: whiteIndexToPitch(lastVisible),
+      minWhiteIdx: firstVisible,
+      maxWhiteIdx: lastVisible,
+    }
+  }
+
+  // 垂直布局：scrollPos=0 时顶部显示 C8 (whiteIdx=51)
+  const firstVisualRow = Math.floor(scrollPos / geo.whiteKeySize)
+  const lastVisualRow = Math.ceil((scrollPos + viewportSize) / geo.whiteKeySize)
+  const maxWhiteIdx = Math.min(WHITE_KEY_COUNT - 1, WHITE_KEY_COUNT - 1 - firstVisualRow)
+  const minWhiteIdx = Math.max(0, WHITE_KEY_COUNT - 1 - lastVisualRow)
 
   return {
-    minPitch: whiteIndexToPitch(firstVisible),
-    maxPitch: whiteIndexToPitch(lastVisible),
-    minWhiteIdx: firstVisible,
-    maxWhiteIdx: lastVisible,
+    minPitch: whiteIndexToPitch(minWhiteIdx),
+    maxPitch: whiteIndexToPitch(maxWhiteIdx),
+    minWhiteIdx,
+    maxWhiteIdx,
   }
 }
 
@@ -322,8 +344,8 @@ function detectKeyClickVertical(
   const blackCrossSizeVal = blackKeyCrossSize(geo)
 
   if (clickX >= blackCrossStart && clickX < blackCrossStart + blackCrossSizeVal) {
-    // 计算 88 网格行
-    const gridRow = Math.floor((clickY - geo.keyOffset) / geo.blackKeySize)
+    // 计算 88 网格行（垂直布局：行号 0=顶部=C8, 87=底部=A0）
+    const gridRow = 87 - Math.floor((clickY - geo.keyOffset) / geo.blackKeySize)
     if (gridRow >= 0 && gridRow < 88) {
       const pitch = gridRow + PITCH_MIN
       if (isBlackKey(pitch)) {
@@ -340,7 +362,8 @@ function detectKeyClickVertical(
   }
 
   // ---- 第二步：检查白键（52 网格） ----
-  const whiteRow = Math.floor((clickY - geo.y) / geo.whiteKeySize)
+  // 垂直布局：行号 0=顶部=C8, 51=底部=A0
+  const whiteRow = WHITE_KEY_COUNT - 1 - Math.floor((clickY - geo.y) / geo.whiteKeySize)
   if (whiteRow >= 0 && whiteRow < WHITE_KEY_COUNT) {
     const pitch = whiteIndexToPitch(whiteRow)
     return { pitch, keyType: 'white' }

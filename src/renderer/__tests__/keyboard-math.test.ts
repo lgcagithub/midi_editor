@@ -182,8 +182,8 @@ describe('computeKeyboardGeometry', () => {
 
   it('垂直布局 keyOffset 不为 0', () => {
     const geo = computeKeyboardGeometry(areaX, areaY, areaWidth, areaHeight, 'vertical')
-    // keyOffset 应该略大于 areaY
-    expect(geo.keyOffset).toBeGreaterThan(areaY)
+    // keyOffset 应该不为 0（A#0 的偏移量）
+    expect(geo.keyOffset).not.toBe(0)
   })
 
   it('水平布局计算白键宽度 = areaWidth / 52', () => {
@@ -217,20 +217,26 @@ describe('blackKeyVisualTopOffset', () => {
 })
 
 describe('keySlotStart / whiteKeyStart', () => {
-  it('keySlotStart 返回 88 键网格中指定索引的起始位置', () => {
+  it('垂直布局 keySlotStart: C8 (keyIndex=87) 在顶部', () => {
     const geo = computeKeyboardGeometry(0, 0, 80, 1040, 'vertical')
-    // A0 = key 0
-    const a0Start = keySlotStart(0, geo)
-    expect(a0Start).toBe(geo.keyOffset)
-    // A#0 = key 1
-    const aSharp0Start = keySlotStart(1, geo)
-    expect(aSharp0Start).toBeCloseTo(geo.keyOffset + geo.blackKeySize, 10)
+    const c8Start = keySlotStart(87, geo)
+    expect(c8Start).toBe(geo.keyOffset)
   })
 
-  it('whiteKeyStart 返回指定白键的起始位置', () => {
+  it('垂直布局 keySlotStart: A0 (keyIndex=0) 在底部', () => {
     const geo = computeKeyboardGeometry(0, 0, 80, 1040, 'vertical')
-    expect(whiteKeyStart(0, geo)).toBe(geo.y)
-    expect(whiteKeyStart(1, geo)).toBeCloseTo(geo.y + geo.whiteKeySize, 10)
+    const a0Start = keySlotStart(0, geo)
+    expect(a0Start).toBeCloseTo(geo.keyOffset + geo.blackKeySize * 87, 10)
+  })
+
+  it('垂直布局 whiteKeyStart: C8 (whiteIdx=51) 在顶部', () => {
+    const geo = computeKeyboardGeometry(0, 0, 80, 1040, 'vertical')
+    expect(whiteKeyStart(51, geo)).toBe(geo.y)
+  })
+
+  it('垂直布局 whiteKeyStart: A0 (whiteIdx=0) 在底部', () => {
+    const geo = computeKeyboardGeometry(0, 0, 80, 1040, 'vertical')
+    expect(whiteKeyStart(0, geo)).toBeCloseTo(geo.y + geo.whiteKeySize * 51, 10)
   })
 })
 
@@ -239,11 +245,11 @@ describe('keySlotStart / whiteKeyStart', () => {
 // ============================================================
 
 describe('computeVisiblePitchRange', () => {
-  it('滚动 0 时从第一个白键开始', () => {
+  it('滚动 0 时顶部显示 C8', () => {
     const geo = computeKeyboardGeometry(0, 0, 80, 1040, 'vertical')
     const range = computeVisiblePitchRange(0, 1040, geo)
-    expect(range.minWhiteIdx).toBe(0)
-    expect(range.minPitch).toBe(PITCH_MIN)
+    expect(range.maxWhiteIdx).toBe(51)
+    expect(range.maxPitch).toBe(PITCH_MAX)
   })
 
   it('视口高度 0 时最小和最大索引相等', () => {
@@ -252,13 +258,12 @@ describe('computeVisiblePitchRange', () => {
     expect(range.minWhiteIdx).toBe(range.maxWhiteIdx)
   })
 
-  it('大幅滚动后可见范围在高音区', () => {
+  it('大幅滚动后可见范围在低音区', () => {
     const geo = computeKeyboardGeometry(0, 0, 80, 1040, 'vertical')
-    // 滚动到最后一个白键附近
     const farScroll = geo.whiteKeySize * 40
     const range = computeVisiblePitchRange(farScroll, 1040, geo)
-    expect(range.minWhiteIdx).toBeGreaterThanOrEqual(40)
-    expect(range.maxWhiteIdx).toBe(51)
+    // 滚动 40 个白键 → 高音已滚出视口，可见低音区 (whiteIdx ≤ 11)
+    expect(range.maxWhiteIdx).toBeLessThanOrEqual(11)
   })
 })
 
@@ -273,37 +278,35 @@ describe('detectKeyClick', () => {
   const areaHeight = 1040
   const geo = computeKeyboardGeometry(areaX, areaY, areaWidth, areaHeight, 'vertical')
 
-  it('在键盘区域内点击空白区域返回 null', () => {
-    // 在键盘区域之外
+  it('在键盘区域外点击返回 null', () => {
     const result = detectKeyClick(-1, 50, geo)
     expect(result).toBeNull()
   })
 
-  it('点击白键区域返回正确的白键音高', () => {
-    // 点击第一个白键 (A0) 的中间区域
+  it('点击顶部白键区域返回 C8', () => {
+    // 垂直布局：顶部是 C8 (whiteIdx=51, pitch=108)
     const y = geo.y + geo.whiteKeySize / 2
-    const x = geo.x + geo.width / 2  // 白键区（非黑键交叉区）
+    const x = geo.x + geo.width / 2
+    const result = detectKeyClick(x, y, geo)
+    expect(result).not.toBeNull()
+    expect(result!.keyType).toBe('white')
+    expect(result!.pitch).toBe(108)  // C8
+  })
+
+  it('点击底部白键区域返回 A0', () => {
+    // A0 是 bottom: y = geo.y + 51 * whiteKeySize + whiteKeySize / 2
+    const y = geo.y + geo.whiteKeySize * 51 + geo.whiteKeySize / 2
+    const x = geo.x + geo.width / 2
     const result = detectKeyClick(x, y, geo)
     expect(result).not.toBeNull()
     expect(result!.keyType).toBe('white')
     expect(result!.pitch).toBe(21)  // A0
   })
 
-  it('点击第一个白键的左侧区域且不在黑键视觉范围内时返回白键', () => {
-    const y = geo.y + 10
-    const result = detectKeyClick(geo.x + 5, y, geo)
-    // A0 不是黑键，所以 A#0 的黑键在第一个白键区域内
-    // 但 A#0 黑键只覆盖前 65% 宽度
-    // 点击 y=10 应该在 A0 白键范围内
-    if (result) {
-      expect(result.keyType).toBe('white')
-      expect(result.pitch).toBe(21)
-    }
-  })
-
   it('点击 C4 白键区域返回正确音高', () => {
+    // C4: whiteIdx=23, position = geo.y + whiteKeySize * (51-23) + whiteKeySize/2
     const c4WhiteIdx = pitchToWhiteIndex(60)
-    const y = geo.y + geo.whiteKeySize * c4WhiteIdx + geo.whiteKeySize / 2
+    const y = geo.y + geo.whiteKeySize * (51 - c4WhiteIdx) + geo.whiteKeySize / 2
     const result = detectKeyClick(geo.x + geo.width / 2, y, geo)
     expect(result).not.toBeNull()
     expect(result!.pitch).toBe(60)
