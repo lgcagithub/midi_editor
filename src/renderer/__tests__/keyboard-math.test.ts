@@ -180,10 +180,9 @@ describe('computeKeyboardGeometry', () => {
     expect(geo.blackKeySize).toBeCloseTo(expectedBlack, 10)
   })
 
-  it('垂直布局 keyOffset 不为 0', () => {
+  it('垂直布局 keyOffset = whiteKeySize - blackKeySize', () => {
     const geo = computeKeyboardGeometry(areaX, areaY, areaWidth, areaHeight, 'vertical')
-    // keyOffset 应该不为 0（A#0 的偏移量）
-    expect(geo.keyOffset).not.toBe(0)
+    expect(geo.keyOffset).toBeCloseTo(geo.whiteKeySize - geo.blackKeySize, 10)
   })
 
   it('水平布局计算白键宽度 = areaWidth / 52', () => {

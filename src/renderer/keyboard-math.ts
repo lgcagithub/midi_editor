@@ -149,11 +149,12 @@ export function computeKeyboardGeometry(
     }
   }
 
-  // 垂直布局（默认）
+  // 垂直布局（C8 在顶部、A0 在底部）
   const whiteKeySize = areaHeight / WHITE_KEY_COUNT
   const blackKeySize = whiteKeySize * 7 / 12
-  const firstBlackKeyY = areaY + whiteKeySize * 2 - blackKeySize * 2
-  const keyOffset = firstBlackKeyY - blackKeySize
+  // C8 是顶部第一个键（不完整八度），Piano Roll 的 C8 行从 pitchOffset = whiteKeySize - blackKeySize 开始。
+  // 键盘的 88 键网格需要同样的偏移才能与 Piano Roll 对齐。
+  const keyOffset = whiteKeySize - blackKeySize
   return {
     x: areaX,
     y: areaY,
