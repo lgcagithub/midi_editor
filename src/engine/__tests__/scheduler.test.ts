@@ -67,6 +67,7 @@ function createTestStore(overrides?: Partial<StoreState>) {
     tracks: [],
     tempoMap: [{ tick: 0, bpm: 120 }],
     timeSigs: [{ tick: 0, numerator: 4, denominator: 4 }],
+    projectVersion: 0,
     loadProject: () => {},
     newProject: () => {},
     addTrack: () => {},

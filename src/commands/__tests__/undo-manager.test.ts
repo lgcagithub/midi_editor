@@ -36,6 +36,7 @@ function createMockStore(initialNotes: Note[] = []): StoreState {
     ppq: 480,
     tempoMap: [],
     timeSigs: [],
+    projectVersion: 0,
     activeTool: 'pointer',
     activeTrackId: 'track-1',
     selectedNoteIds: [],

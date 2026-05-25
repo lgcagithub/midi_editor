@@ -11,6 +11,8 @@ export interface ProjectSlice {
   tempoMap: TempoEvent[]
   /** 拍号列表 */
   timeSigs: TimeSigEvent[]
+  /** 工程数据版本 —— 每次数据变更时递增，供渲染层检测变化 */
+  projectVersion: number
 
   /** 加载工程 */
   loadProject: (project: Project) => void
@@ -51,6 +53,7 @@ export const createProjectSlice: StateCreator<ProjectSlice, [], [], ProjectSlice
     tracks: defaultProject.tracks,
     tempoMap: defaultProject.tempoMap,
     timeSigs: defaultProject.timeSigs,
+    projectVersion: 0,
 
     loadProject: (project) => set({ ...project }),
 
@@ -59,11 +62,13 @@ export const createProjectSlice: StateCreator<ProjectSlice, [], [], ProjectSlice
     addTrack: (track) =>
       set((state) => ({
         tracks: [...state.tracks, track],
+        projectVersion: state.projectVersion + 1,
       })),
 
     removeTrack: (trackId) =>
       set((state) => ({
         tracks: state.tracks.filter((t) => t.id !== trackId),
+        projectVersion: state.projectVersion + 1,
       })),
 
     updateTrack: (trackId, updates) =>
@@ -71,6 +76,7 @@ export const createProjectSlice: StateCreator<ProjectSlice, [], [], ProjectSlice
         tracks: state.tracks.map((t) =>
           t.id === trackId ? { ...t, ...updates } : t,
         ),
+        projectVersion: state.projectVersion + 1,
       })),
 
     addNote: (trackId, note) =>
@@ -86,6 +92,7 @@ export const createProjectSlice: StateCreator<ProjectSlice, [], [], ProjectSlice
               }
             : t,
         ),
+        projectVersion: state.projectVersion + 1,
       })),
 
     removeNote: (trackId, noteId) =>
@@ -95,6 +102,7 @@ export const createProjectSlice: StateCreator<ProjectSlice, [], [], ProjectSlice
             ? { ...t, notes: t.notes.filter((n) => n.id !== noteId) }
             : t,
         ),
+        projectVersion: state.projectVersion + 1,
       })),
 
     updateNote: (trackId, noteId, updates) =>
@@ -109,10 +117,19 @@ export const createProjectSlice: StateCreator<ProjectSlice, [], [], ProjectSlice
               }
             : t,
         ),
+        projectVersion: state.projectVersion + 1,
       })),
 
-    updateTempoMap: (tempoMap) => set({ tempoMap }),
+    updateTempoMap: (tempoMap) =>
+      set((state) => ({
+        tempoMap,
+        projectVersion: state.projectVersion + 1,
+      })),
 
-    updateTimeSigs: (timeSigs) => set({ timeSigs }),
+    updateTimeSigs: (timeSigs) =>
+      set((state) => ({
+        timeSigs,
+        projectVersion: state.projectVersion + 1,
+      })),
   }
 }

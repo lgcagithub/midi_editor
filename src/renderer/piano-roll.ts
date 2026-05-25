@@ -107,7 +107,7 @@ export class PianoRollOrchestrator {
   private prevZoomY = 1
   private prevScrollX = 0
   private prevScrollY = 0
-  private prevTracksHash = ''
+  private prevProjectVersion = -1
   private prevSelectedHash = ''
   private prevTool: string = 'pointer'
 
@@ -324,11 +324,10 @@ export class PianoRollOrchestrator {
       this.prevScrollY = vp.scrollY
     }
 
-    // 检测音符变化
-    const tracksHash = `${state.tracks.length}:${state.tracks.map(t => t.notes.length).join(',')}`
-    if (tracksHash !== this.prevTracksHash) {
+    // 检测项目数据变化（音符增/删/改、轨道变化等）
+    if (state.projectVersion !== this.prevProjectVersion) {
       this.dirtyNotes = true
-      this.prevTracksHash = tracksHash
+      this.prevProjectVersion = state.projectVersion
     }
 
     // 检测选中项变化
