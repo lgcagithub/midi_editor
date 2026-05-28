@@ -55,9 +55,11 @@ export const createProjectSlice: StateCreator<ProjectSlice, [], [], ProjectSlice
     timeSigs: defaultProject.timeSigs,
     projectVersion: 0,
 
-    loadProject: (project) => set({ ...project }),
+    loadProject: (project) =>
+      set((state) => ({ ...project, projectVersion: state.projectVersion + 1 })),
 
-    newProject: () => set({ ...createDefaultProject() }),
+    newProject: () =>
+      set((state) => ({ ...createDefaultProject(), projectVersion: state.projectVersion + 1 })),
 
     addTrack: (track) =>
       set((state) => ({
