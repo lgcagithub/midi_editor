@@ -197,10 +197,10 @@ export function blackKeyCrossSize(geo: KeyboardGeometry): number {
  */
 export function blackKeyCrossStart(geo: KeyboardGeometry): number {
   if (geo.orientation === 'horizontal') {
-    // 水平布局黑键在下半部分
-    return geo.y + geo.height - blackKeyCrossSize(geo)
+    // 水平布局黑键在上半部分（靠 Piano Roll 侧）
+    return geo.y
   }
-  // 垂直布局黑键在左半部分
+  // 垂直布局黑键在左半部分（靠 Piano Roll 侧）
   return geo.x
 }
 
