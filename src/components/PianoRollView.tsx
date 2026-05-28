@@ -70,7 +70,8 @@ export default function PianoRollView(): JSX.Element {
 
   useEffect(() => { injectScrollbarCSS() }, [])
 
-  const horizContentWidth = 100000
+  /** 滚动条逻辑宽度（足够覆盖绝大多数 MIDI 文件的时间范围） */
+  const HORIZ_SCROLL_CONTENT_WIDTH = 100000
 
   const handleHorizScroll = useCallback(() => {
     const el = horizScrollRef.current
@@ -95,7 +96,7 @@ export default function PianoRollView(): JSX.Element {
         style={scrollBarStyle}
         onScroll={handleHorizScroll}
       >
-        <div style={{ ...scrollBarTrackStyle, width: horizContentWidth }} />
+        <div style={{ ...scrollBarTrackStyle, width: HORIZ_SCROLL_CONTENT_WIDTH }} />
       </div>
     </div>
   )

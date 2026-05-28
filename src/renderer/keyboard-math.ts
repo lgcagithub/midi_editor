@@ -47,6 +47,9 @@ const BLACK_KEY_CROSS_RATIO = 0.65
 /** 白键总数 */
 const WHITE_KEY_COUNT = 52
 
+/** 88 键总数 */
+const TOTAL_KEY_COUNT = 88
+
 // ============================================================
 // 7.1 — 白键索引 ↔ MIDI 音高双向映射
 // ============================================================
@@ -206,7 +209,7 @@ export function blackKeyCrossStart(geo: KeyboardGeometry): number {
 
 /**
  * 获取 88 键网格中指定键的起始位置（沿主轴）
- * @param keyIndex 88 键索引 (0-87, pitch - 21)
+ * @param keyIndex 88 键索引 (0 — TOTAL_KEY_COUNT-1, pitch - 21)
  * @param geo 键盘几何参数
  * @returns 沿主轴的位置坐标
  */
@@ -215,7 +218,7 @@ export function keySlotStart(keyIndex: number, geo: KeyboardGeometry): number {
     return geo.keyOffset + geo.blackKeySize * keyIndex
   }
   // 垂直布局：高音(C8)在顶部，低音(A0)在底部
-  return geo.keyOffset + geo.blackKeySize * (87 - keyIndex)
+  return geo.keyOffset + geo.blackKeySize * (TOTAL_KEY_COUNT - 1 - keyIndex)
 }
 
 /**
@@ -340,8 +343,8 @@ function detectKeyClickVertical(
   const blackCrossSizeVal = blackKeyCrossSize(geo)
 
   if (clickX >= blackCrossStart && clickX < blackCrossStart + blackCrossSizeVal) {
-    // 计算 88 网格行（垂直布局：行号 0=顶部=C8, 87=底部=A0）
-    const gridRow = 87 - Math.floor((clickY - geo.keyOffset) / geo.blackKeySize)
+    // 计算 88 网格行（垂直布局：行号 0=顶部=C8, TOTAL_KEY_COUNT-1=底部=A0）
+    const gridRow = TOTAL_KEY_COUNT - 1 - Math.floor((clickY - geo.keyOffset) / geo.blackKeySize)
     if (gridRow >= 0 && gridRow < 88) {
       const pitch = gridRow + PITCH_MIN
       if (isBlackKey(pitch)) {

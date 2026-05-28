@@ -35,7 +35,7 @@ export interface CoordinateMapper {
   /** 每行（一个半音）的像素高度，已包含 zoomY */
   noteHeight: number
 
-  /** 音高轴偏移量：对齐键盘顶部不完整八度（C8 独白键） */
+  /** 音高轴偏移：补偿键盘顶部不完整八度（仅 C8 一个白键） */
   pitchOffset: number
 
   /**
