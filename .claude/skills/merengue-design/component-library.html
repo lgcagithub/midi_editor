@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Merengue — Component Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500&family=JetBrains+Mono:wght@400&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2/src/duotone/style.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --background:#1A1819;--bg:var(--background);
+  --surface1:#242223;--surface2:#2E2927;--surface3:#423B38;
+  --border:#2E2927;--border-visible:#423B38;
+  --text1:#FAF9F8;--text2:#A89D96;--text3:#7A706A;--text4:#5C5450;
+  --accent:#FF6E82;--accent-subtle:#3D0D17;
+  --success:#4BC0A0;--success-bg:#0F2E28;
+  --warning:#F4A742;--warning-bg:#2E2412;
+  --error:#E5484D;--error-bg:#2E1515;
+  --info-bg:#1A1E2E;
+  --font-display:"Fredoka","Segoe UI","Noto Sans SC",sans-serif;
+  --font-body:"Nunito Sans","Segoe UI","Noto Sans SC",sans-serif;
+  --font-mono:"JetBrains Mono","Consolas","Courier New",monospace;
+  --text-display:36px;--text-h1:28px;--text-h2:22px;--text-h3:18px;
+  --text-body:14px;--text-body-sm:12px;--text-caption:11px;--text-label:10px;
+  --space-2xs:2px;--space-xs:4px;--space-sm:8px;--space-md:16px;
+  --space-lg:24px;--space-xl:32px;--space-2xl:48px;--space-3xl:64px;--space-4xl:96px;
+  --radius-element:4px;--radius-control:8px;--radius-component:12px;
+  --radius-container:16px;--radius-pill:999px;
+  --ease-micro:cubic-bezier(0.34,1.56,0.64,1);
+  --ease-standard:cubic-bezier(0.34,1.3,0.64,1);
+  --ease-emphasis:cubic-bezier(0.32,1.2,0.64,1);
+  --duration-micro:150ms;--duration-standard:250ms;--duration-emphasis:400ms;
+  --shadow-1:0 1px 2px rgba(0,0,0,0.20),0 1px 4px rgba(0,0,0,0.30);
+  --shadow-2:0 2px 8px rgba(0,0,0,0.30),0 4px 16px rgba(0,0,0,0.20);
+  --shadow-3:0 4px 16px rgba(0,0,0,0.40),0 8px 32px rgba(0,0,0,0.30);
+  --note-coral:#FF5C72;--note-tangerine:#FFB347;--note-sky:#7EC8E3;
+  --note-lavender:#C3A6F4;--note-mint:#4BC0A0;--note-peach:#FF8A80;
+  --note-lemon:#FFE566;--note-lilac:#D4A5F6;
+}
+[data-theme="light"]{
+  --background:#FAF9F8;--bg:var(--background);
+  --surface1:#F5F2F0;--surface2:#E8E3DF;--surface3:#D4CDC7;
+  --border:#E8E3DF;--border-visible:#D4CDC7;
+  --text1:#242223;--text2:#5C5450;--text3:#7A706A;--text4:#A89D96;
+  --accent:#FF5C72;--accent-subtle:#FFF0F2;
+  --success-bg:#F0FDF6;--warning-bg:#FFFBF0;--error-bg:#FEF2F2;--info-bg:#F0F2FA;
+  --shadow-1:0 1px 2px rgba(0,0,0,0.04),0 1px 3px rgba(0,0,0,0.06);
+  --shadow-2:0 2px 8px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.04);
+  --shadow-3:0 4px 16px rgba(0,0,0,0.08),0 8px 32px rgba(0,0,0,0.04);
+}
+html,body{
+  font-family:var(--font-body);font-size:var(--text-body);
+  background:var(--background);color:var(--text1);
+  -webkit-font-smoothing:antialiased;line-height:1.5;
+}
+.cl-shell{display:flex;min-height:100vh}
+.cl-toc{
+  width:240px;flex-shrink:0;position:sticky;top:0;height:100vh;
+  overflow-y:auto;padding:48px 24px;border-right:1px solid var(--border);
+  background:var(--background);
+}
+.cl-toc h1{font-family:var(--font-display);font-size:20px;font-weight:500;margin-bottom:24px;color:var(--text1)}
+.cl-toc nav{display:flex;flex-direction:column;gap:2px}
+.cl-toc-category{
+  font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+  color:var(--text4);padding:14px 0 4px;cursor:pointer;user-select:none;
+  transition:color var(--duration-micro) var(--ease-micro);
+  background:transparent;border:none;text-align:left;font-family:var(--font-body);width:100%;
+}
+.cl-toc-category:hover,.cl-toc-category.active{color:var(--text1)}
+.cl-toc-sub{
+  font-size:13px;color:var(--text2);text-decoration:none;
+  padding:4px 0 4px 12px;display:block;border-radius:var(--radius-element);
+  transition:all var(--duration-micro) var(--ease-micro);
+}
+.cl-toc-sub:hover,.cl-toc-sub.active{color:var(--text1);background:var(--surface2)}
+.cl-main{flex:1;padding:48px;max-width:960px;overflow-y:auto}
+.cl-category-panel{display:none}
+.cl-category-panel.active{display:block}
+.cl-component-group{margin-bottom:64px;scroll-margin-top:48px}
+.cl-component-group h3{font-family:var(--font-display);font-size:var(--text-h2);font-weight:500;margin-bottom:6px;color:var(--text1)}
+.cl-component-group>p{font-size:var(--text-body);color:var(--text2);margin-bottom:24px}
+.cl-canvas{
+  background:var(--surface1);border:1px solid var(--border);
+  border-radius:var(--radius-component);padding:40px;margin-bottom:24px;
+  display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;
+}
+.cl-canvas-wrap{gap:24px;align-items:flex-start}
+.cl-variant{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.cl-variant-label{
+  font-size:10px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);
+}
+.cl-spec-table{width:100%;border-collapse:collapse;font-size:13px}
+.cl-spec-table th,.cl-spec-table td{text-align:left;padding:10px 0;border-bottom:1px solid var(--border)}
+.cl-spec-table th{font-weight:600;color:var(--text3);text-transform:uppercase;font-size:10px;letter-spacing:0.06em}
+.cl-spec-table td{color:var(--text2)}
+.cl-spec-table .col-value{color:var(--text1);font-family:var(--font-mono);font-size:12px}
+
+/* Buttons */
+.cl-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  font-family:var(--font-body);font-size:14px;font-weight:600;
+  border:none;cursor:pointer;border-radius:var(--radius-control);
+  transition:all var(--duration-micro) var(--ease-micro);
+  height:36px;padding:0 20px;white-space:nowrap;
+}
+.cl-btn--primary{background:var(--accent);color:#fff}
+.cl-btn--primary:hover,.cl-btn--primary.is-hover{background:#E54D62;transform:scale(1.03)}
+.cl-btn--primary:active,.cl-btn--primary.is-active{background:#C03950;transform:scale(0.97)}
+.cl-btn--primary:focus-visible,.cl-btn--primary.is-focused{box-shadow:0 0 0 3px rgba(255,110,130,0.3)}
+.cl-btn--primary.is-disabled,.cl-btn--primary:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+
+.cl-btn--secondary{background:transparent;border:1px solid var(--border-visible);color:var(--text1)}
+.cl-btn--secondary:hover,.cl-btn--secondary.is-hover{background:var(--surface2);border-color:var(--text4)}
+.cl-btn--secondary:active,.cl-btn--secondary.is-active{background:var(--surface3)}
+.cl-btn--secondary.is-disabled{opacity:0.4;cursor:not-allowed}
+
+.cl-btn--ghost{background:transparent;color:var(--text2);height:32px;padding:0 12px}
+.cl-btn--ghost:hover,.cl-btn--ghost.is-hover{background:var(--surface2);color:var(--text1)}
+.cl-btn--ghost:active,.cl-btn--ghost.is-active{background:var(--surface3)}
+.cl-btn--ghost.is-disabled{opacity:0.4;cursor:not-allowed}
+
+.cl-btn--destructive{background:var(--error);color:#fff}
+.cl-btn--destructive:hover,.cl-btn--destructive.is-hover{background:#d32f2f;transform:scale(1.03)}
+.cl-btn--destructive.is-disabled{opacity:0.4;cursor:not-allowed;transform:none}
+
+.cl-btn--sm{height:28px;padding:0 12px;font-size:12px}
+.cl-btn--lg{height:44px;padding:0 28px;font-size:16px}
+
+/* Icon Button */
+.cl-ibtn{
+  width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;
+  border:none;border-radius:var(--radius-control);cursor:pointer;font-size:18px;
+  transition:all var(--duration-micro) var(--ease-micro);
+  background:transparent;color:var(--text2);
+}
+.cl-ibtn:hover{background:var(--surface2);color:var(--text1);transform:scale(1.05)}
+.cl-ibtn:active{transform:scale(0.95)}
+.cl-ibtn--primary{background:var(--accent);color:#fff}
+.cl-ibtn--primary:hover{background:#E54D62}
+.cl-ibtn--sm{width:28px;height:28px;font-size:14px}
+.cl-ibtn--lg{width:44px;height:44px;font-size:22px}
+
+/* Toggle Button */
+.cl-toggle-btn{
+  display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;
+  border-radius:var(--radius-control);border:1px solid var(--border-visible);
+  background:transparent;cursor:pointer;font-family:var(--font-body);font-size:12px;font-weight:600;
+  color:var(--text2);transition:all var(--duration-micro) var(--ease-micro);
+}
+.cl-toggle-btn.is-on{background:var(--accent-subtle);border-color:var(--accent);color:var(--accent)}
+.cl-toggle-btn:hover{border-color:var(--text4)}
+.cl-toggle-btn.is-on:hover{background:var(--accent-subtle)}
+
+/* Segmented Control */
+.cl-seg{display:inline-flex;border-radius:var(--radius-control);border:1px solid var(--border-visible);overflow:hidden}
+.cl-seg-btn{
+  height:32px;padding:0 14px;border:none;border-right:1px solid var(--border-visible);
+  background:transparent;cursor:pointer;font-family:var(--font-body);font-size:12px;font-weight:600;
+  color:var(--text2);transition:all var(--duration-micro) var(--ease-micro);
+}
+.cl-seg-btn:last-child{border-right:none}
+.cl-seg-btn.is-selected{background:var(--accent-subtle);color:var(--accent)}
+.cl-seg-btn:hover:not(.is-selected){background:var(--surface2)}
+
+/* Inputs */
+.cl-input{
+  height:36px;padding:0 12px;border-radius:var(--radius-control);
+  border:1px solid var(--border-visible);background:var(--surface3);
+  font-family:var(--font-body);font-size:14px;color:var(--text1);
+  transition:all var(--duration-micro) var(--ease-micro);
+  outline:none;width:100%;max-width:280px;
+}
+.cl-input::placeholder{color:var(--text3)}
+.cl-input:hover{border-color:var(--text4)}
+.cl-input:focus,.cl-input.is-focused{border-color:var(--accent);box-shadow:0 0 0 2px rgba(255,110,130,0.2)}
+.cl-input.is-error{border-color:var(--error)}
+.cl-input.is-disabled,.cl-input:disabled{opacity:0.4;cursor:not-allowed}
+.cl-input.is-success{border-color:var(--success)}
+.cl-label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:600}
+.cl-helper{font-size:11px;margin-top:4px}
+.cl-helper--error{color:var(--error)}
+.cl-helper--success{color:var(--success)}
+
+/* Checkbox */
+.cl-check{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:var(--text1)}
+.cl-check input{display:none}
+.cl-check-box{
+  width:18px;height:18px;border-radius:var(--radius-element);border:1.5px solid var(--border-visible);
+  flex-shrink:0;position:relative;transition:all var(--duration-micro) var(--ease-micro);
+  background:transparent;
+}
+.cl-check input:checked+.cl-check-box{background:var(--accent);border-color:var(--accent)}
+.cl-check input:checked+.cl-check-box::after{
+  content:"";position:absolute;top:3px;left:5px;
+  width:6px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);
+}
+.cl-check:hover .cl-check-box{border-color:var(--text3)}
+.cl-check input:focus-visible+.cl-check-box{box-shadow:0 0 0 2px rgba(255,110,130,0.2)}
+.cl-check.is-disabled{opacity:0.4;cursor:not-allowed}
+
+/* Radio */
+.cl-radio{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:var(--text1)}
+.cl-radio input{display:none}
+.cl-radio-dot{
+  width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border-visible);
+  flex-shrink:0;position:relative;transition:all var(--duration-micro) var(--ease-micro);
+}
+.cl-radio input:checked+.cl-radio-dot{border-color:var(--accent)}
+.cl-radio input:checked+.cl-radio-dot::after{
+  content:"";position:absolute;top:3px;left:3px;
+  width:10px;height:10px;border-radius:50%;background:var(--accent);
+}
+.cl-radio:hover .cl-radio-dot{border-color:var(--text3)}
+.cl-radio.is-disabled{opacity:0.4;cursor:not-allowed}
+
+/* Switch */
+.cl-switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:var(--text1)}
+.cl-switch input{display:none}
+.cl-switch-track{
+  width:40px;height:22px;border-radius:999px;background:var(--surface3);
+  position:relative;transition:background var(--duration-micro) var(--ease-micro);
+}
+.cl-switch-track::after{
+  content:"";position:absolute;top:3px;left:3px;
+  width:16px;height:16px;border-radius:50%;background:#fff;
+  transition:transform var(--duration-micro) var(--ease-micro);
+}
+.cl-switch input:checked+.cl-switch-track{background:var(--accent)}
+.cl-switch input:checked+.cl-switch-track::after{transform:translateX(18px)}
+.cl-switch input:focus-visible+.cl-switch-track{box-shadow:0 0 0 2px rgba(255,110,130,0.2)}
+.cl-switch.is-disabled{opacity:0.4;cursor:not-allowed}
+
+/* Slider */
+.cl-slider-wrap{position:relative;width:200px;height:24px;display:flex;align-items:center}
+.cl-slider-track{width:100%;height:4px;border-radius:999px;background:var(--surface3);position:relative}
+.cl-slider-fill{position:absolute;top:0;left:0;height:100%;background:var(--accent);border-radius:999px}
+.cl-slider-thumb{
+  position:absolute;top:50%;transform:translate(-50%,-50%);
+  width:16px;height:16px;border-radius:50%;background:#fff;
+  border:2px solid var(--accent);cursor:pointer;
+  transition:transform var(--duration-micro) var(--ease-micro);
+}
+.cl-slider-thumb:hover{transform:translate(-50%,-50%) scale(1.15)}
+
+/* Card */
+.cl-card{
+  background:var(--surface1);border:1px solid var(--border);
+  border-radius:var(--radius-component);padding:20px;
+  box-shadow:var(--shadow-1);width:260px;
+  transition:all var(--duration-micro) var(--ease-micro);
+}
+.cl-card:hover,.cl-card.is-hover{transform:translateY(-1px);box-shadow:var(--shadow-2)}
+.cl-card h4{font-size:18px;font-weight:600;color:var(--text1);margin-bottom:4px}
+.cl-card p{font-size:12px;color:var(--text2)}
+
+/* Badge */
+.cl-badge{
+  display:inline-flex;align-items:center;padding:2px 10px;border-radius:var(--radius-pill);
+  font-size:11px;font-weight:600;line-height:1;white-space:nowrap;height:20px;
+}
+.cl-badge--neutral{background:var(--surface2);color:var(--text3)}
+.cl-badge--success{background:var(--success-bg);color:var(--success)}
+.cl-badge--warning{background:var(--warning-bg);color:var(--warning)}
+.cl-badge--error{background:var(--error-bg);color:var(--error)}
+.cl-badge--info{background:var(--info-bg);color:var(--accent)}
+
+/* Tag */
+.cl-tag{
+  display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:var(--radius-pill);
+  font-size:11px;font-weight:600;line-height:1;white-space:nowrap;height:24px;
+  background:var(--surface2);color:var(--text3);cursor:pointer;border:none;
+  transition:all var(--duration-micro) var(--ease-micro);font-family:var(--font-body);
+}
+.cl-tag.is-selected{background:var(--accent-subtle);color:var(--accent)}
+.cl-tag:hover{background:var(--surface3)}
+.cl-tag-remove{cursor:pointer;opacity:0.6;font-size:14px;line-height:1}
+.cl-tag-remove:hover{opacity:1}
+
+/* Table */
+.cl-table{width:100%;border-collapse:collapse}
+.cl-table th{
+  text-align:left;padding:8px 16px;font-size:11px;font-weight:700;color:var(--text2);
+  text-transform:uppercase;letter-spacing:0.03em;border-bottom:1px solid var(--border-visible);
+  background:var(--surface2);
+}
+.cl-table td{padding:8px 16px;font-size:14px;color:var(--text1);border-bottom:1px solid var(--border)}
+.cl-table tr:hover td{background:var(--surface2)}
+.cl-table tr.is-selected td{background:var(--accent-subtle)}
+
+/* Tabs */
+.cl-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border)}
+.cl-tab{
+  padding:8px 16px;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;
+  background:transparent;border:none;font-family:var(--font-body);
+  border-bottom:2px solid transparent;transition:all var(--duration-micro) var(--ease-micro);
+}
+.cl-tab:hover{color:var(--text2)}
+.cl-tab.is-active{color:var(--text1);border-bottom-color:var(--accent)}
+
+/* Progress */
+.cl-progress{width:100%;height:6px;border-radius:999px;background:var(--surface3);overflow:hidden}
+.cl-progress-fill{height:100%;border-radius:999px;background:var(--accent);transition:width 0.5s var(--ease-standard)}
+.cl-progress-ring{transform:rotate(-90deg)}
+.cl-progress-ring circle{transition:stroke-dashoffset 0.5s var(--ease-standard)}
+
+/* Spinner */
+.cl-spinner{
+  display:inline-block;border-radius:50%;border-style:solid;
+  border-color:var(--surface3);border-top-color:var(--accent);
+  animation:cl-spin 0.8s linear infinite;
+}
+.cl-spinner--sm{width:16px;height:16px;border-width:2px}
+.cl-spinner--md{width:24px;height:24px;border-width:2px}
+.cl-spinner--lg{width:40px;height:40px;border-width:3px}
+@keyframes cl-spin{to{transform:rotate(360deg)}}
+
+/* Skeleton */
+.cl-skeleton{background:var(--surface2);border-radius:var(--radius-element);position:relative;overflow:hidden}
+.cl-skeleton::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.05),transparent);
+  animation:cl-shimmer 1.5s infinite;
+}
+@keyframes cl-shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+
+/* Toast */
+.cl-toast{
+  display:inline-flex;align-items:center;gap:12px;padding:16px;border-radius:var(--radius-component);
+  background:var(--surface1);box-shadow:var(--shadow-2);font-size:14px;max-width:360px;
+}
+.cl-toast--success{border-left:3px solid var(--success)}
+.cl-toast--error{border-left:3px solid var(--error)}
+.cl-toast--warning{border-left:3px solid var(--warning)}
+
+/* Alert */
+.cl-alert{
+  display:flex;align-items:flex-start;gap:12px;padding:16px;border-radius:var(--radius-component);
+  font-size:14px;max-width:480px;
+}
+.cl-alert--info{background:var(--info-bg);color:var(--text1)}
+.cl-alert--success{background:var(--success-bg);color:var(--text1)}
+.cl-alert--warning{background:var(--warning-bg);color:var(--text1)}
+.cl-alert--error{background:var(--error-bg);color:var(--text1)}
+.cl-alert-title{font-weight:600;margin-bottom:4px}
+.cl-alert-desc{font-size:12px;color:var(--text2)}
+
+/* Modal */
+.cl-modal{
+  background:var(--surface1);border-radius:var(--radius-container);box-shadow:var(--shadow-3);
+  padding:24px;max-width:480px;border:1px solid var(--border);
+}
+.cl-modal-backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* Tooltip */
+.cl-tooltip{
+  display:inline-block;padding:6px 12px;border-radius:var(--radius-element);
+  background:var(--surface2);color:var(--text1);font-size:11px;
+  box-shadow:var(--shadow-2);position:relative;
+}
+
+/* Avatar */
+.cl-avatar{
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:50%;background:var(--accent-subtle);color:var(--accent);
+  font-weight:600;overflow:hidden;flex-shrink:0;
+}
+.cl-avatar--sm{width:24px;height:24px;font-size:10px}
+.cl-avatar--md{width:32px;height:32px;font-size:12px}
+.cl-avatar--lg{width:40px;height:40px;font-size:14px}
+
+/* Breadcrumb */
+.cl-breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px}
+.cl-breadcrumb a{color:var(--text2);text-decoration:none}
+.cl-breadcrumb a:hover{color:var(--text1)}
+.cl-breadcrumb span{color:var(--text3)}
+.cl-breadcrumb .current{color:var(--text1);font-weight:600}
+
+/* Accordion */
+.cl-accordion{border-radius:var(--radius-component);border:1px solid var(--border);overflow:hidden}
+.cl-accordion-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;background:transparent;border:none;cursor:pointer;
+  font-family:var(--font-body);font-size:14px;font-weight:600;color:var(--text1);
+  width:100%;text-align:left;transition:background var(--duration-micro) var(--ease-micro);
+}
+.cl-accordion-header:hover{background:var(--surface2)}
+.cl-accordion-content{padding:16px;font-size:14px;color:var(--text2);border-top:1px solid var(--border);display:none}
+.cl-accordion.is-open .cl-accordion-content{display:block}
+
+/* Dropdown */
+.cl-dropdown{
+  background:var(--surface1);border-radius:var(--radius-component);box-shadow:var(--shadow-2);
+  border:1px solid var(--border);padding:4px;min-width:180px;
+}
+.cl-dropdown-item{
+  display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius-control);
+  font-size:14px;color:var(--text1);cursor:pointer;transition:background var(--duration-micro) var(--ease-micro);
+  background:transparent;border:none;width:100%;text-align:left;font-family:var(--font-body);
+}
+.cl-dropdown-item:hover{background:var(--surface2)}
+.cl-dropdown-item.is-selected{color:var(--accent)}
+.cl-dropdown-divider{height:1px;background:var(--border);margin:4px 0}
+
+/* Pagination */
+.cl-pagination{display:flex;align-items:center;gap:4px}
+.cl-page-btn{
+  width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-control);border:none;cursor:pointer;
+  font-family:var(--font-body);font-size:13px;color:var(--text2);
+  background:transparent;transition:all var(--duration-micro) var(--ease-micro);
+}
+.cl-page-btn:hover{background:var(--surface2);color:var(--text1)}
+.cl-page-btn.is-current{background:var(--accent);color:#fff}
+
+/* Empty State */
+.cl-empty{display:flex;flex-direction:column;align-items:center;gap:12px;padding:48px 24px;text-align:center}
+.cl-empty-icon{font-size:48px;color:var(--text3)}
+.cl-empty-title{font-size:18px;font-weight:600;color:var(--text2)}
+.cl-empty-desc{font-size:14px;color:var(--text3);max-width:280px}
+
+/* Popover */
+.cl-popover{
+  background:var(--surface1);border-radius:var(--radius-component);box-shadow:var(--shadow-2);
+  border:1px solid var(--border);padding:12px;max-width:240px;font-size:14px;
+}
+
+/* Color swatches for foundation sections */
+.cl-swatch-grid{display:flex;flex-wrap:wrap;gap:8px}
+.cl-swatch-item{width:64px;text-align:center}
+.cl-swatch{
+  width:64px;height:48px;border-radius:var(--radius-element);border:1px solid var(--border);
+  margin-bottom:6px;
+}
+.cl-swatch-label{font-family:var(--font-mono);font-size:10px;color:var(--text3);display:block}
+.cl-swatch-hex{font-family:var(--font-mono);font-size:10px;color:var(--text2);display:block}
+
+/* Type samples */
+.cl-type-row{display:flex;align-items:baseline;gap:16px;margin-bottom:8px}
+.cl-type-sample{padding:4px 0}
+.cl-type-token{font-family:var(--font-mono);font-size:11px;color:var(--text3);width:90px;flex-shrink:0}
+
+/* Radii shapes */
+.cl-radius-shape{
+  width:80px;height:80px;border:2px solid var(--accent);background:var(--accent-subtle);
+  display:flex;align-items:center;justify-content:center;
+}
+.cl-radius-label{font-family:var(--font-mono);font-size:10px;color:var(--text2);margin-top:8px;text-align:center}
+
+/* Elevation cards */
+.cl-elev-card{
+  width:140px;height:80px;background:var(--surface1);border:1px solid var(--border);
+  border-radius:var(--radius-control);display:flex;align-items:center;justify-content:center;
+}
+
+/* Spacing bars */
+.cl-space-bar{height:8px;background:var(--accent);border-radius:var(--radius-pill);margin-bottom:4px}
+.cl-space-label{font-family:var(--font-mono);font-size:10px;color:var(--text3)}
+
+/* Nav Menu */
+.cl-nav{display:flex;gap:4px}
+.cl-nav-item{
+  padding:8px 16px;border-radius:var(--radius-control);font-size:14px;color:var(--text2);
+  cursor:pointer;background:transparent;border:none;font-family:var(--font-body);
+  transition:all var(--duration-micro) var(--ease-micro);
+}
+.cl-nav-item:hover{background:var(--surface2);color:var(--text1)}
+.cl-nav-item.is-active{background:var(--accent-subtle);color:var(--accent)}
+
+/* Link */
+.cl-link{color:var(--accent);text-decoration:none;font-size:14px;transition:opacity var(--duration-micro) var(--ease-micro)}
+.cl-link:hover{opacity:0.8;text-decoration:underline}
+
+/* DatePicker mock */
+.cl-datepicker{
+  display:inline-grid;grid-template-columns:repeat(7,36px);gap:2px;
+  padding:16px;background:var(--surface1);border-radius:var(--radius-component);
+  border:1px solid var(--border);
+}
+.cl-datepicker .dow{font-size:10px;color:var(--text3);text-align:center;padding:4px 0;font-weight:600;text-transform:uppercase}
+.cl-datepicker .day{
+  width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:var(--text1);border-radius:var(--radius-element);
+  cursor:pointer;transition:all var(--duration-micro) var(--ease-micro);
+  background:transparent;border:none;font-family:var(--font-body);
+}
+.cl-datepicker .day:hover{background:var(--surface2)}
+.cl-datepicker .day.is-today{border:1px solid var(--accent)}
+.cl-datepicker .day.is-selected{background:var(--accent);color:#fff}
+
+/* Floating bar */
+.floating-bar{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:100;
+  display:flex;align-items:center;gap:4px;padding:4px;border-radius:999px;
+  background:var(--surface1);border:1.5px solid var(--border);
+  box-shadow:0px 8px 32px rgba(0,0,0,0.12);
+}
+.mode-btn{
+  height:32px;border-radius:999px;border:none;background:transparent;cursor:pointer;
+  display:flex;align-items:center;gap:6px;padding:0 14px;
+  font-family:var(--font-body);font-size:12px;font-weight:500;color:var(--text3);
+  transition:all var(--duration-micro) var(--ease-micro);outline:none;
+}
+.mode-btn:hover{color:var(--text1)}
+.mode-btn.active{background:var(--surface3);color:var(--text1)}
+.mode-btn i{font-size:14px}
+</style>
+</head>
+<body>
+<div class="cl-shell">
+<aside class="cl-toc">
+  <h1>Merengue</h1>
+  <nav>
+    <button class="cl-toc-category active" data-cat="foundations">Foundations</button>
+    <a class="cl-toc-sub active" href="#colors" data-cat="foundations">Colors</a>
+    <a class="cl-toc-sub" href="#typography" data-cat="foundations">Typography</a>
+    <a class="cl-toc-sub" href="#radii" data-cat="foundations">Radii</a>
+    <a class="cl-toc-sub" href="#elevation" data-cat="foundations">Elevation</a>
+    <a class="cl-toc-sub" href="#spacing" data-cat="foundations">Spacing</a>
+    <a class="cl-toc-sub" href="#iconography" data-cat="foundations">Iconography</a>
+
+    <button class="cl-toc-category" data-cat="actions">Actions</button>
+    <a class="cl-toc-sub" href="#button" data-cat="actions">Button</a>
+    <a class="cl-toc-sub" href="#icon-button" data-cat="actions">Icon Button</a>
+    <a class="cl-toc-sub" href="#toggle-button" data-cat="actions">Toggle Button</a>
+    <a class="cl-toc-sub" href="#segmented-control" data-cat="actions">Segmented Control</a>
+    <a class="cl-toc-sub" href="#dropdown-menu" data-cat="actions">Dropdown Menu</a>
+
+    <button class="cl-toc-category" data-cat="inputs">Inputs</button>
+    <a class="cl-toc-sub" href="#text-input" data-cat="inputs">Text Input</a>
+    <a class="cl-toc-sub" href="#textarea" data-cat="inputs">Textarea</a>
+    <a class="cl-toc-sub" href="#select" data-cat="inputs">Select</a>
+    <a class="cl-toc-sub" href="#checkbox" data-cat="inputs">Checkbox</a>
+    <a class="cl-toc-sub" href="#radio-group" data-cat="inputs">Radio Group</a>
+    <a class="cl-toc-sub" href="#switch" data-cat="inputs">Switch</a>
+    <a class="cl-toc-sub" href="#slider" data-cat="inputs">Slider</a>
+    <a class="cl-toc-sub" href="#date-picker" data-cat="inputs">Date Picker</a>
+
+    <button class="cl-toc-category" data-cat="data-display">Data Display</button>
+    <a class="cl-toc-sub" href="#card" data-cat="data-display">Card</a>
+    <a class="cl-toc-sub" href="#avatar" data-cat="data-display">Avatar</a>
+    <a class="cl-toc-sub" href="#badge" data-cat="data-display">Badge</a>
+    <a class="cl-toc-sub" href="#tag" data-cat="data-display">Tag</a>
+    <a class="cl-toc-sub" href="#data-table" data-cat="data-display">Data Table</a>
+    <a class="cl-toc-sub" href="#skeleton" data-cat="data-display">Skeleton</a>
+
+    <button class="cl-toc-category" data-cat="navigation">Navigation</button>
+    <a class="cl-toc-sub" href="#tabs" data-cat="navigation">Tabs</a>
+    <a class="cl-toc-sub" href="#breadcrumb" data-cat="navigation">Breadcrumb</a>
+    <a class="cl-toc-sub" href="#pagination" data-cat="navigation">Pagination</a>
+    <a class="cl-toc-sub" href="#nav-menu" data-cat="navigation">Nav Menu</a>
+    <a class="cl-toc-sub" href="#link" data-cat="navigation">Link</a>
+
+    <button class="cl-toc-category" data-cat="feedback">Feedback</button>
+    <a class="cl-toc-sub" href="#alert" data-cat="feedback">Alert</a>
+    <a class="cl-toc-sub" href="#toast" data-cat="feedback">Toast</a>
+    <a class="cl-toc-sub" href="#progress" data-cat="feedback">Progress</a>
+    <a class="cl-toc-sub" href="#spinner" data-cat="feedback">Spinner</a>
+    <a class="cl-toc-sub" href="#empty-state" data-cat="feedback">Empty State</a>
+
+    <button class="cl-toc-category" data-cat="overlays">Overlays</button>
+    <a class="cl-toc-sub" href="#modal" data-cat="overlays">Modal</a>
+    <a class="cl-toc-sub" href="#popover" data-cat="overlays">Popover</a>
+    <a class="cl-toc-sub" href="#tooltip" data-cat="overlays">Tooltip</a>
+    <a class="cl-toc-sub" href="#accordion" data-cat="overlays">Accordion</a>
+  </nav>
+</aside>
+
+<main class="cl-main">
+<!-- ═══════ FOUNDATIONS ═══════ -->
+<section id="cat-foundations" class="cl-category-panel active">
+
+<div id="colors" class="cl-component-group">
+<h3>Colors</h3>
+<p>原始色阶与语义 Token 映射。暖调中性灰 + 珊瑚粉强调色。</p>
+<div class="cl-canvas"><div class="cl-swatch-grid">
+<div class="cl-swatch-item"><div class="cl-swatch" style="background:#1A1819"></div><span class="cl-swatch-label">neutral.950</span><span class="cl-swatch-hex">#1A1819</span></div>
+<div class="cl-swatch-item"><div class="cl-swatch" style="background:#242223"></div><span class="cl-swatch-label">neutral.900</span><span class="cl-swatch-hex">#242223</span></div>
+<div class="cl-swatch-item"><div class="cl-swatch" style="background:#2E2927"></div><span class="cl-swatch-label">neutral.800</span><span class="cl-swatch-hex">#2E2927</span></div>
+<div class="cl-swatch-item"><div class="cl-swatch" style="background:#423B38"></div><span class="cl-swatch-label">neutral.700</span><span class="cl-swatch-hex">#423B38</span></div>
+<div class="cl-swatch-item"><div class="cl-swatch" style="background:#A89D96"></div><span class="cl-swatch-label">neutral.400</span><span class="cl-swatch-hex">#A89D96</span></div>
+<div class="cl-swatch-item"><div class="cl-swatch" style="background:#FAF9F8"></div><span class="cl-swatch-label">neutral.50</span><span class="cl-swatch-hex">#FAF9F8</span></div>
+<div class="cl-swatch-item"><div class="cl-swatch" style="background:#FF6E82"></div><span class="cl-swatch-label">brand.400</span><span class="cl-swatch-hex">#FF6E82</span></div>
+<div class="cl-swatch-item"><div class="cl-swatch" style="background:#FF5C72"></div><span class="cl-swatch-label">brand.500</span><span class="cl-swatch-hex">#FF5C72</span></div>
+<div class="cl-swatch-item"><div class="cl-swatch" style="background:#3D0D17"></div><span class="cl-swatch-label">brand.950</span><span class="cl-swatch-hex">#3D0D17</span></div>
+<div class="cl-swatch-item"><div class="cl-swatch" style="background:#4BC0A0"></div><span class="cl-swatch-label">success</span><span class="cl-swatch-hex">#4BC0A0</span></div>
+<div class="cl-swatch-item"><div class="cl-swatch" style="background:#F4A742"></div><span class="cl-swatch-label">warning</span><span class="cl-swatch-hex">#F4A742</span></div>
+<div class="cl-swatch-item"><div class="cl-swatch" style="background:#E5484D"></div><span class="cl-swatch-label">error</span><span class="cl-swatch-hex">#E5484D</span></div>
+</div></div>
+<table class="cl-spec-table">
+<tr><th>Token</th><th>Primitive</th><th>Hex</th><th>Role</th></tr>
+<tr><td class="col-value">--background</td><td>neutral.950</td><td class="col-value">#1A1819</td><td>Page background</td></tr>
+<tr><td class="col-value">--surface1</td><td>neutral.900</td><td class="col-value">#242223</td><td>Cards, containers</td></tr>
+<tr><td class="col-value">--surface2</td><td>neutral.800</td><td class="col-value">#2E2927</td><td>Secondary surfaces</td></tr>
+<tr><td class="col-value">--accent</td><td>brand.400</td><td class="col-value">#FF6E82</td><td>Primary interactive</td></tr>
+<tr><td class="col-value">--accent-subtle</td><td>brand.950</td><td class="col-value">#3D0D17</td><td>Accent tint backgrounds</td></tr>
+<tr><td class="col-value">--text1</td><td>neutral.50</td><td class="col-value">#FAF9F8</td><td>Primary text</td></tr>
+</table>
+</div>
+
+<div id="typography" class="cl-component-group">
+<h3>Typography</h3>
+<p>Fredoka（展陈）+ Nunito Sans（正文）+ JetBrains Mono（技术数据）。</p>
+<div class="cl-canvas" style="flex-direction:column;gap:16px">
+<div class="cl-type-row"><span class="cl-type-token">--display</span><span class="cl-type-sample" style="font-family:var(--font-display);font-size:36px;font-weight:500;line-height:1.15">夏日序曲</span><span style="color:var(--text3);font-size:11px">36px / 500</span></div>
+<div class="cl-type-row"><span class="cl-type-token">--h2</span><span class="cl-type-sample" style="font-family:var(--font-body);font-size:22px;font-weight:600;line-height:1.25">Section Heading</span><span style="color:var(--text3);font-size:11px">22px / 600</span></div>
+<div class="cl-type-row"><span class="cl-type-token">--body</span><span class="cl-type-sample" style="font-family:var(--font-body);font-size:14px;font-weight:400;line-height:1.5">The quick brown fox jumps over the lazy dog.</span><span style="color:var(--text3);font-size:11px">14px / 400</span></div>
+<div class="cl-type-row"><span class="cl-type-token">--body-sm</span><span class="cl-type-sample" style="font-family:var(--font-body);font-size:12px;font-weight:400;line-height:1.5">Secondary text for descriptions and labels</span><span style="color:var(--text3);font-size:11px">12px / 400</span></div>
+<div class="cl-type-row"><span class="cl-type-token">--caption</span><span class="cl-type-sample" style="font-family:var(--font-body);font-size:11px;font-weight:400;line-height:1.4;letter-spacing:0.01em">TIMESTAMPS & FOOTNOTES</span><span style="color:var(--text3);font-size:11px">11px / 400</span></div>
+<div class="cl-type-row"><span class="cl-type-token">--label</span><span class="cl-type-sample" style="font-family:var(--font-body);font-size:10px;font-weight:700;line-height:1.3;letter-spacing:0.03em">MICRO LABELS</span><span style="color:var(--text3);font-size:11px">10px / 700</span></div>
+<div class="cl-type-row"><span class="cl-type-token">--font-mono</span><span class="cl-type-sample" style="font-family:var(--font-mono);font-size:12px;font-weight:400">tick=480 dur=240 vel=100</span><span style="color:var(--text3);font-size:11px">12px / 400</span></div>
+</div>
+<table class="cl-spec-table">
+<tr><th>Token</th><th>Font</th><th>Size</th><th>Weight</th><th>LH</th></tr>
+<tr><td class="col-value">--display</td><td>Fredoka</td><td class="col-value">36px</td><td>500</td><td class="col-value">1.15</td></tr>
+<tr><td class="col-value">--body</td><td>Nunito Sans</td><td class="col-value">14px</td><td>400</td><td class="col-value">1.5</td></tr>
+<tr><td class="col-value">--font-mono</td><td>JetBrains Mono</td><td class="col-value">12px</td><td>400</td><td>—</td></tr>
+</table>
+</div>
+
+<div id="radii" class="cl-component-group">
+<h3>Radii</h3>
+<p>软但不圆——组件 12px，控件 8px，标签/芯片 999px。</p>
+<div class="cl-canvas" style="gap:32px">
+<div class="cl-variant">
+<span class="cl-variant-label">4px — element</span>
+<div class="cl-radius-shape" style="border-radius:4px"></div>
+</div>
+<div class="cl-variant">
+<span class="cl-variant-label">8px — control</span>
+<div class="cl-radius-shape" style="border-radius:8px"></div>
+</div>
+<div class="cl-variant">
+<span class="cl-variant-label">12px — component</span>
+<div class="cl-radius-shape" style="border-radius:12px"></div>
+</div>
+<div class="cl-variant">
+<span class="cl-variant-label">16px — container</span>
+<div class="cl-radius-shape" style="border-radius:16px"></div>
+</div>
+<div class="cl-variant">
+<span class="cl-variant-label">999px — pill</span>
+<div class="cl-radius-shape" style="border-radius:999px;width:80px"></div>
+</div>
+</div>
+<table class="cl-spec-table">
+<tr><th>Token</th><th>Value</th><th>Use</th></tr>
+<tr><td class="col-value">--radius-element</td><td class="col-value">4px</td><td>Checkbox, small controls</td></tr>
+<tr><td class="col-value">--radius-control</td><td class="col-value">8px</td><td>Buttons, inputs</td></tr>
+<tr><td class="col-value">--radius-component</td><td class="col-value">12px</td><td>Cards, panels</td></tr>
+<tr><td class="col-value">--radius-container</td><td class="col-value">16px</td><td>Modals, sheets</td></tr>
+<tr><td class="col-value">--radius-pill</td><td class="col-value">999px</td><td>Pills, tags, chips</td></tr>
+</table>
+</div>
+
+<div id="elevation" class="cl-component-group">
+<h3>Elevation</h3>
+<p>Subtle 阴影策略——暗模式下更重，补偿低对比感知。</p>
+<div class="cl-canvas" style="gap:32px">
+<div class="cl-variant">
+<span class="cl-variant-label">Level 0 — Flat</span>
+<div class="cl-elev-card">No shadow</div>
+</div>
+<div class="cl-variant">
+<span class="cl-variant-label">Level 1 — Card</span>
+<div class="cl-elev-card" style="box-shadow:var(--shadow-1)">shadow-1</div>
+</div>
+<div class="cl-variant">
+<span class="cl-variant-label">Level 2 — Floating</span>
+<div class="cl-elev-card" style="box-shadow:var(--shadow-2)">shadow-2</div>
+</div>
+<div class="cl-variant">
+<span class="cl-variant-label">Level 3 — Modal</span>
+<div class="cl-elev-card" style="box-shadow:var(--shadow-3)">shadow-3</div>
+</div>
+</div>
+<table class="cl-spec-table">
+<tr><th>Level</th><th>Value</th><th>Use</th></tr>
+<tr><td class="col-value">shadow-1</td><td class="col-value">0 1px 2px rgba(0,0,0,0.20), 0 1px 4px rgba(0,0,0,0.30)</td><td>Cards</td></tr>
+<tr><td class="col-value">shadow-2</td><td class="col-value">0 2px 8px rgba(0,0,0,0.30), 0 4px 16px rgba(0,0,0,0.20)</td><td>Dropdowns, popovers</td></tr>
+<tr><td class="col-value">shadow-3</td><td class="col-value">0 4px 16px rgba(0,0,0,0.40), 0 8px 32px rgba(0,0,0,0.30)</td><td>Modals, dialogs</td></tr>
+</table>
+</div>
+
+<div id="spacing" class="cl-component-group">
+<h3>Spacing</h3>
+<p>8px 基础网格，从 2px 微调到 96px 呼吸空间。</p>
+<div class="cl-canvas" style="flex-direction:column;gap:12px">
+<div class="cl-variant"><span class="cl-variant-label">2xs · 2px</span><div class="cl-space-bar" style="width:2px"></div></div>
+<div class="cl-variant"><span class="cl-variant-label">xs · 4px</span><div class="cl-space-bar" style="width:4px"></div></div>
+<div class="cl-variant"><span class="cl-variant-label">sm · 8px</span><div class="cl-space-bar" style="width:8px"></div></div>
+<div class="cl-variant"><span class="cl-variant-label">md · 16px</span><div class="cl-space-bar" style="width:16px"></div></div>
+<div class="cl-variant"><span class="cl-variant-label">lg · 24px</span><div class="cl-space-bar" style="width:24px"></div></div>
+<div class="cl-variant"><span class="cl-variant-label">xl · 32px</span><div class="cl-space-bar" style="width:32px"></div></div>
+<div class="cl-variant"><span class="cl-variant-label">2xl · 48px</span><div class="cl-space-bar" style="width:48px"></div></div>
+</div>
+</div>
+
+<div id="iconography" class="cl-component-group">
+<h3>Iconography</h3>
+<p>Phosphor Duotone — 温暖双色调，人文风格。12 个图标 × 3 尺寸。</p>
+<div class="cl-canvas" style="gap:16px;flex-direction:column">
+<div style="display:flex;gap:16px;font-size:16px;color:var(--text2)">
+<i class="ph-duotone ph-heart"></i><i class="ph-duotone ph-star"></i><i class="ph-duotone ph-music-notes"></i>
+<i class="ph-duotone ph-play"></i><i class="ph-duotone ph-pencil"></i><i class="ph-duotone ph-eraser"></i>
+<i class="ph-duotone ph-folder-open"></i><i class="ph-duotone ph-floppy-disk"></i><i class="ph-duotone ph-gear"></i>
+<i class="ph-duotone ph-trash"></i><i class="ph-duotone ph-magnifying-glass"></i><i class="ph-duotone ph-plus-circle"></i>
+</div>
+<div style="display:flex;gap:16px;font-size:20px;color:var(--text1)">
+<i class="ph-duotone ph-heart"></i><i class="ph-duotone ph-star"></i><i class="ph-duotone ph-music-notes"></i>
+<i class="ph-duotone ph-play"></i><i class="ph-duotone ph-pencil"></i><i class="ph-duotone ph-eraser"></i>
+</div>
+<div style="display:flex;gap:16px;font-size:24px;color:var(--accent)">
+<i class="ph-duotone ph-heart"></i><i class="ph-duotone ph-star"></i><i class="ph-duotone ph-music-notes"></i>
+</div>
+</div>
+<table class="cl-spec-table">
+<tr><th>Property</th><th>Value</th></tr>
+<tr><td>Kit</td><td class="col-value">Phosphor Duotone</td></tr>
+<tr><td>Weight</td><td class="col-value">duotone</td></tr>
+<tr><td>CDN</td><td class="col-value">unpkg.com/@phosphor-icons/web@2/src/duotone/style.css</td></tr>
+<tr><td>Usage</td><td class="col-value">&lt;i class="ph-duotone ph-heart"&gt;&lt;/i&gt;</td></tr>
+</table>
+</div>
+</section>
+
+<!-- ═══════ ACTIONS ═══════ -->
+<section id="cat-actions" class="cl-category-panel">
+
+<div id="button" class="cl-component-group">
+<h3>Button</h3>
+<p>Primary、Secondary、Ghost、Destructive 四种变体，带状态展示。</p>
+<div class="cl-canvas" style="flex-direction:column;gap:24px">
+<div class="cl-variant"><span class="cl-variant-label">Primary</span><div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+<button class="cl-btn cl-btn--primary">Default</button>
+<button class="cl-btn cl-btn--primary is-hover">Hover</button>
+<button class="cl-btn cl-btn--primary is-active">Active</button>
+<button class="cl-btn cl-btn--primary is-focused">Focus</button>
+<button class="cl-btn cl-btn--primary is-disabled">Disabled</button>
+</div></div>
+<div class="cl-variant"><span class="cl-variant-label">Secondary</span><div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+<button class="cl-btn cl-btn--secondary">Default</button>
+<button class="cl-btn cl-btn--secondary is-hover">Hover</button>
+<button class="cl-btn cl-btn--secondary is-active">Active</button>
+<button class="cl-btn cl-btn--secondary is-disabled">Disabled</button>
+</div></div>
+<div class="cl-variant"><span class="cl-variant-label">Ghost</span><div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+<button class="cl-btn cl-btn--ghost">Default</button>
+<button class="cl-btn cl-btn--ghost is-hover">Hover</button>
+<button class="cl-btn cl-btn--ghost is-active">Active</button>
+</div></div>
+<div class="cl-variant"><span class="cl-variant-label">Destructive</span><div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+<button class="cl-btn cl-btn--destructive">Delete</button>
+<button class="cl-btn cl-btn--destructive is-hover">Hover</button>
+<button class="cl-btn cl-btn--destructive is-disabled">Disabled</button>
+</div></div>
+</div>
+<table class="cl-spec-table">
+<tr><th>Variant</th><th>Background</th><th>Text</th><th>Radius</th><th>Height</th></tr>
+<tr><td class="col-value">Primary</td><td class="col-value">var(--accent)</td><td class="col-value">#FFFFFF</td><td class="col-value">8px</td><td class="col-value">36px</td></tr>
+<tr><td class="col-value">Secondary</td><td>transparent</td><td class="col-value">var(--text1)</td><td class="col-value">8px</td><td class="col-value">36px</td></tr>
+<tr><td class="col-value">Ghost</td><td>transparent</td><td class="col-value">var(--text2)</td><td class="col-value">8px</td><td class="col-value">32px</td></tr>
+</table>
+</div>
+
+<div id="icon-button" class="cl-component-group">
+<h3>Icon Button</h3>
+<p>纯图标按钮，带缩放反馈。</p>
+<div class="cl-canvas" style="gap:24px">
+<div class="cl-variant"><span class="cl-variant-label">Default</span><button class="cl-ibtn"><i class="ph-duotone ph-heart"></i></button></div>
+<div class="cl-variant"><span class="cl-variant-label">Primary</span><button class="cl-ibtn cl-ibtn--primary"><i class="ph-duotone ph-play"></i></button></div>
+<div class="cl-variant"><span class="cl-variant-label">SM</span><button class="cl-ibtn cl-ibtn--sm"><i class="ph-duotone ph-star"></i></button></div>
+<div class="cl-variant"><span class="cl-variant-label">LG</span><button class="cl-ibtn cl-ibtn--lg"><i class="ph-duotone ph-music-notes"></i></button></div>
+</div>
+</div>
+
+<div id="toggle-button" class="cl-component-group">
+<h3>Toggle Button</h3>
+<p>开关式按钮，On/Off 两种状态。</p>
+<div class="cl-canvas" style="gap:24px">
+<div class="cl-variant"><span class="cl-variant-label">Off</span><button class="cl-toggle-btn"><i class="ph-duotone ph-pencil"></i> 编辑</button></div>
+<div class="cl-variant"><span class="cl-variant-label">On</span><button class="cl-toggle-btn is-on"><i class="ph-duotone ph-pencil"></i> 编辑</button></div>
+</div>
+</div>
+
+<div id="segmented-control" class="cl-component-group">
+<h3>Segmented Control</h3>
+<p>多选一分段控制器。</p>
+<div class="cl-canvas">
+<div class="cl-seg">
+<button class="cl-seg-btn is-selected">Pointer</button>
+<button class="cl-seg-btn">Pencil</button>
+<button class="cl-seg-btn">Eraser</button>
+</div>
+</div>
+</div>
+
+<div id="dropdown-menu" class="cl-component-group">
+<h3>Dropdown Menu</h3>
+<p>弹出菜单，支持选中态、分隔线。</p>
+<div class="cl-canvas">
+<div class="cl-dropdown">
+<button class="cl-dropdown-item"><i class="ph-duotone ph-file-plus"></i> New Project</button>
+<button class="cl-dropdown-item"><i class="ph-duotone ph-folder-open"></i> Open...</button>
+<div class="cl-dropdown-divider"></div>
+<button class="cl-dropdown-item"><i class="ph-duotone ph-floppy-disk"></i> Save</button>
+<button class="cl-dropdown-item is-selected"><i class="ph-duotone ph-export"></i> Export MIDI</button>
+<div class="cl-dropdown-divider"></div>
+<button class="cl-dropdown-item" style="color:var(--error)"><i class="ph-duotone ph-trash"></i> Delete</button>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ═══════ INPUTS ═══════ -->
+<section id="cat-inputs" class="cl-category-panel">
+
+<div id="text-input" class="cl-component-group">
+<h3>Text Input</h3>
+<p>单行文本输入框，含各种状态。</p>
+<div class="cl-canvas" style="flex-direction:column;gap:20px">
+<div class="cl-variant"><span class="cl-variant-label">Default</span><input class="cl-input" placeholder="输入项目名称..."></div>
+<div class="cl-variant"><span class="cl-variant-label">Focused</span><input class="cl-input is-focused" value="summer_demo.mid"></div>
+<div class="cl-variant"><span class="cl-variant-label">Error</span><input class="cl-input is-error" value="invalid_file"><span class="cl-helper cl-helper--error">不支持的文件格式</span></div>
+<div class="cl-variant"><span class="cl-variant-label">Success</span><input class="cl-input is-success" value="project.mid"><span class="cl-helper cl-helper--success">文件有效</span></div>
+<div class="cl-variant"><span class="cl-variant-label">Disabled</span><input class="cl-input is-disabled" value="只读项目" disabled></div>
+</div>
+<table class="cl-spec-table">
+<tr><th>Property</th><th>Value</th></tr>
+<tr><td>Height</td><td class="col-value">36px</td></tr>
+<tr><td>Background</td><td class="col-value">var(--surface3)</td></tr>
+<tr><td>Border (default)</td><td class="col-value">1px solid var(--border-visible)</td></tr>
+<tr><td>Border (focus)</td><td class="col-value">1px solid var(--accent)</td></tr>
+<tr><td>Radius</td><td class="col-value">8px</td></tr>
+</table>
+</div>
+
+<div id="textarea" class="cl-component-group">
+<h3>Textarea</h3>
+<p>多行文本输入，垂直可调整大小。</p>
+<div class="cl-canvas">
+<div class="cl-variant" style="width:100%;max-width:360px">
+<span class="cl-variant-label">Default</span>
+<textarea class="cl-input" style="min-height:100px;resize:vertical;padding:12px" placeholder="输入备注..."></textarea>
+</div>
+</div>
+</div>
+
+<div id="select" class="cl-component-group">
+<h3>Select</h3>
+<p>下拉选择器。</p>
+<div class="cl-canvas">
+<div class="cl-variant" style="width:240px">
+<span class="cl-variant-label">Default</span>
+<div class="cl-input" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+<span style="color:var(--text3)">选择音色...</span>
+<i class="ph-duotone ph-caret-down" style="color:var(--text3);font-size:14px"></i>
+</div>
+</div>
+</div>
+</div>
+
+<div id="checkbox" class="cl-component-group">
+<h3>Checkbox</h3>
+<p>复选框 — 未选、已选、不确定三种状态。</p>
+<div class="cl-canvas" style="gap:24px">
+<label class="cl-check"><input type="checkbox"><span class="cl-check-box"></span> Unchecked</label>
+<label class="cl-check"><input type="checkbox" checked><span class="cl-check-box"></span> Checked</label>
+<label class="cl-check is-disabled"><input type="checkbox" disabled><span class="cl-check-box"></span> Disabled</label>
+</div>
+</div>
+
+<div id="radio-group" class="cl-component-group">
+<h3>Radio Group</h3>
+<p>单选按钮组。</p>
+<div class="cl-canvas" style="gap:24px;flex-direction:column">
+<label class="cl-radio"><input type="radio" name="rg"><span class="cl-radio-dot"></span> Piano Roll</label>
+<label class="cl-radio"><input type="radio" name="rg" checked><span class="cl-radio-dot"></span> Event List</label>
+<label class="cl-radio is-disabled"><input type="radio" name="rg" disabled><span class="cl-radio-dot"></span> Score (Coming Soon)</label>
+</div>
+</div>
+
+<div id="switch" class="cl-component-group">
+<h3>Switch</h3>
+<p>开关切换。</p>
+<div class="cl-canvas" style="gap:32px">
+<label class="cl-switch"><input type="checkbox"><span class="cl-switch-track"></span> Snap to Grid</label>
+<label class="cl-switch"><input type="checkbox" checked><span class="cl-switch-track"></span> Metronome</label>
+<label class="cl-switch is-disabled"><input type="checkbox" disabled><span class="cl-switch-track"></span> Disabled</label>
+</div>
+</div>
+
+<div id="slider" class="cl-component-group">
+<h3>Slider</h3>
+<p>范围滑块。</p>
+<div class="cl-canvas" style="flex-direction:column;gap:16px">
+<div class="cl-variant"><span class="cl-variant-label">Volume — 72%</span>
+<div class="cl-slider-wrap"><div class="cl-slider-track"><div class="cl-slider-fill" style="width:72%"></div><div class="cl-slider-thumb" style="left:72%"></div></div></div>
+</div>
+<div class="cl-variant"><span class="cl-variant-label">Tempo — 45%</span>
+<div class="cl-slider-wrap"><div class="cl-slider-track"><div class="cl-slider-fill" style="width:45%"></div><div class="cl-slider-thumb" style="left:45%"></div></div></div>
+</div>
+</div>
+
+<div id="date-picker" class="cl-component-group">
+<h3>Date Picker</h3>
+<p>日历选日期。</p>
+<div class="cl-canvas">
+<div class="cl-datepicker">
+<span class="dow">Mo</span><span class="dow">Tu</span><span class="dow">We</span><span class="dow">Th</span><span class="dow">Fr</span><span class="dow">Sa</span><span class="dow">Su</span>
+<button class="day">1</button><button class="day">2</button><button class="day">3</button><button class="day">4</button><button class="day">5</button><button class="day">6</button><button class="day">7</button>
+<button class="day">8</button><button class="day">9</button><button class="day">10</button><button class="day">11</button><button class="day">12</button><button class="day">13</button><button class="day">14</button>
+<button class="day is-today">15</button><button class="day is-selected">16</button><button class="day">17</button><button class="day">18</button><button class="day">19</button><button class="day">20</button><button class="day">21</button>
+<button class="day">22</button><button class="day">23</button><button class="day">24</button><button class="day">25</button><button class="day">26</button><button class="day">27</button><button class="day">28</button>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ═══════ DATA DISPLAY ═══════ -->
+<section id="cat-data-display" class="cl-category-panel">
+
+<div id="card" class="cl-component-group">
+<h3>Card</h3>
+<p>标准卡片 — 默认、悬停两种状态。</p>
+<div class="cl-canvas" style="gap:24px">
+<div class="cl-card"><h4>Track 1 — Piano</h4><p>312 个音符 · Grand Piano · Ch.1</p></div>
+<div class="cl-card is-hover"><h4>Track 2 — Strings</h4><p>205 个音符 · Violin Section · Ch.2</p></div>
+</div>
+<table class="cl-spec-table">
+<tr><th>Property</th><th>Value</th></tr>
+<tr><td>Background</td><td class="col-value">var(--surface1)</td></tr>
+<tr><td>Border</td><td class="col-value">1px solid var(--border)</td></tr>
+<tr><td>Radius</td><td class="col-value">12px</td></tr>
+<tr><td>Shadow</td><td class="col-value">var(--shadow-1)</td></tr>
+</table>
+</div>
+
+<div id="avatar" class="cl-component-group">
+<h3>Avatar</h3>
+<p>圆形头像 — 首字母 + 彩色底。</p>
+<div class="cl-canvas" style="gap:16px;align-items:center">
+<div class="cl-avatar cl-avatar--sm">M</div>
+<div class="cl-avatar cl-avatar--md">M</div>
+<div class="cl-avatar cl-avatar--lg">M</div>
+</div>
+</div>
+
+<div id="badge" class="cl-component-group">
+<h3>Badge</h3>
+<p>状态徽章 — 5 种语义变体。</p>
+<div class="cl-canvas" style="gap:12px">
+<span class="cl-badge cl-badge--neutral">Draft</span>
+<span class="cl-badge cl-badge--info">Processing</span>
+<span class="cl-badge cl-badge--success">Active</span>
+<span class="cl-badge cl-badge--warning">Review</span>
+<span class="cl-badge cl-badge--error">Failed</span>
+</div>
+</div>
+
+<div id="tag" class="cl-component-group">
+<h3>Tag</h3>
+<p>可交互标签，支持选中和删除。</p>
+<div class="cl-canvas" style="gap:12px">
+<button class="cl-tag">Piano</button>
+<button class="cl-tag is-selected">Strings</button>
+<button class="cl-tag">Drums <span class="cl-tag-remove">&times;</span></button>
+</div>
+</div>
+
+<div id="data-table" class="cl-component-group">
+<h3>Data Table</h3>
+<p>数据表格 — 排序表头 + 行选中态。</p>
+<div class="cl-canvas" style="padding:0;width:100%">
+<table class="cl-table">
+<tr><th>Track</th><th>Instrument</th><th style="text-align:right">Notes</th><th>Status</th></tr>
+<tr><td>Piano</td><td>Grand Piano</td><td style="text-align:right;font-family:var(--font-mono)">312</td><td><span class="cl-badge cl-badge--success">Active</span></td></tr>
+<tr class="is-selected"><td>Strings</td><td>Violin</td><td style="text-align:right;font-family:var(--font-mono)">205</td><td><span class="cl-badge cl-badge--success">Active</span></td></tr>
+<tr><td>Drums</td><td>Standard Kit</td><td style="text-align:right;font-family:var(--font-mono)">152</td><td><span class="cl-badge cl-badge--warning">Muted</span></td></tr>
+</table>
+</div>
+<table class="cl-spec-table">
+<tr><th>Property</th><th>Value</th></tr>
+<tr><td>Header height</td><td class="col-value">36px</td></tr>
+<tr><td>Row height</td><td class="col-value">40px</td></tr>
+<tr><td>Header font</td><td class="col-value">11px / 700 / uppercase</td></tr>
+<tr><td>Hover</td><td class="col-value">var(--surface2)</td></tr>
+<tr><td>Selected</td><td class="col-value">var(--accent-subtle)</td></tr>
+</table>
+</div>
+
+<div id="skeleton" class="cl-component-group">
+<h3>Skeleton</h3>
+<p>骨架屏加载占位。</p>
+<div class="cl-canvas" style="flex-direction:column;gap:12px;width:100%;max-width:320px">
+<div class="cl-skeleton" style="width:60%;height:18px"></div>
+<div class="cl-skeleton" style="width:100%;height:12px"></div>
+<div class="cl-skeleton" style="width:100%;height:12px"></div>
+<div class="cl-skeleton" style="width:80%;height:12px"></div>
+<div style="display:flex;gap:12px;margin-top:8px">
+<div class="cl-skeleton" style="width:32px;height:32px;border-radius:50%"></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px">
+<div class="cl-skeleton" style="width:70%;height:12px"></div>
+<div class="cl-skeleton" style="width:50%;height:12px"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ═══════ NAVIGATION ═══════ -->
+<section id="cat-navigation" class="cl-category-panel">
+
+<div id="tabs" class="cl-component-group">
+<h3>Tabs</h3>
+<p>下划线式标签切换。</p>
+<div class="cl-canvas">
+<div class="cl-tabs">
+<button class="cl-tab is-active">Piano Roll</button>
+<button class="cl-tab">Event List</button>
+<button class="cl-tab">Mixer</button>
+<button class="cl-tab">Settings</button>
+</div>
+</div>
+</div>
+
+<div id="breadcrumb" class="cl-component-group">
+<h3>Breadcrumb</h3>
+<p>面包屑导航。</p>
+<div class="cl-canvas">
+<div class="cl-breadcrumb">
+<a href="#">Projects</a><span>/</span><a href="#">Demos</a><span>/</span><span class="current">summer_demo.mid</span>
+</div>
+</div>
+</div>
+
+<div id="pagination" class="cl-component-group">
+<h3>Pagination</h3>
+<p>分页控件。</p>
+<div class="cl-canvas">
+<div class="cl-pagination">
+<button class="cl-page-btn"><i class="ph-duotone ph-caret-left"></i></button>
+<button class="cl-page-btn">1</button>
+<button class="cl-page-btn is-current">2</button>
+<button class="cl-page-btn">3</button>
+<button class="cl-page-btn">4</button>
+<button class="cl-page-btn"><i class="ph-duotone ph-caret-right"></i></button>
+</div>
+</div>
+</div>
+
+<div id="nav-menu" class="cl-component-group">
+<h3>Nav Menu</h3>
+<p>水平导航菜单。</p>
+<div class="cl-canvas">
+<nav class="cl-nav">
+<button class="cl-nav-item is-active">Editor</button>
+<button class="cl-nav-item">Files</button>
+<button class="cl-nav-item">Export</button>
+<button class="cl-nav-item">Help</button>
+</nav>
+</div>
+</div>
+
+<div id="link" class="cl-component-group">
+<h3>Link</h3>
+<p>文本超链接。</p>
+<div class="cl-canvas" style="flex-direction:column;gap:12px">
+<a href="#" class="cl-link">Download MIDI Specification</a>
+<a href="#" class="cl-link">View Documentation &rarr;</a>
+</div>
+</div>
+</section>
+
+<!-- ═══════ FEEDBACK ═══════ -->
+<section id="cat-feedback" class="cl-category-panel">
+
+<div id="alert" class="cl-component-group">
+<h3>Alert</h3>
+<p>四种语义的提示横幅。</p>
+<div class="cl-canvas" style="flex-direction:column;gap:12px">
+<div class="cl-alert cl-alert--info"><i class="ph-duotone ph-info" style="color:var(--accent);font-size:20px;flex-shrink:0"></i><div><div class="cl-alert-title">Auto-save enabled</div><div class="cl-alert-desc">Your project is automatically saved every 2 minutes.</div></div></div>
+<div class="cl-alert cl-alert--success"><i class="ph-duotone ph-check-circle" style="color:var(--success);font-size:20px;flex-shrink:0"></i><div><div class="cl-alert-title">Export complete</div><div class="cl-alert-desc">summer_demo.mid saved successfully.</div></div></div>
+<div class="cl-alert cl-alert--warning"><i class="ph-duotone ph-warning" style="color:var(--warning);font-size:20px;flex-shrink:0"></i><div><div class="cl-alert-title">Unsaved changes</div><div class="cl-alert-desc">You have 3 unsaved edits. Save before closing.</div></div></div>
+<div class="cl-alert cl-alert--error"><i class="ph-duotone ph-x-circle" style="color:var(--error);font-size:20px;flex-shrink:0"></i><div><div class="cl-alert-title">Failed to load</div><div class="cl-alert-desc">The MIDI file appears to be corrupted or in an unsupported format.</div></div></div>
+</div>
+</div>
+
+<div id="toast" class="cl-component-group">
+<h3>Toast</h3>
+<p>浮动通知。</p>
+<div class="cl-canvas" style="gap:16px">
+<div class="cl-toast cl-toast--success"><i class="ph-duotone ph-check-circle" style="color:var(--success);font-size:18px"></i> File saved successfully</div>
+<div class="cl-toast cl-toast--error"><i class="ph-duotone ph-x-circle" style="color:var(--error);font-size:18px"></i> Failed to export MIDI</div>
+</div>
+</div>
+
+<div id="progress" class="cl-component-group">
+<h3>Progress</h3>
+<p>进度条 + 圆环进度。</p>
+<div class="cl-canvas" style="gap:32px;align-items:center">
+<div class="cl-variant" style="flex:1;min-width:200px">
+<span class="cl-variant-label">Bar — 62%</span>
+<div class="cl-progress"><div class="cl-progress-fill" style="width:62%"></div></div>
+</div>
+<div class="cl-variant">
+<span class="cl-variant-label">Ring — 75%</span>
+<svg class="cl-progress-ring" width="64" height="64" viewBox="0 0 64 64">
+  <circle cx="32" cy="32" r="26" fill="none" stroke="var(--surface3)" stroke-width="6"/>
+  <circle cx="32" cy="32" r="26" fill="none" stroke="var(--accent)" stroke-width="6"
+    stroke-dasharray="163.36" stroke-dashoffset="40.84" stroke-linecap="round"/>
+</svg>
+</div>
+</div>
+</div>
+
+<div id="spinner" class="cl-component-group">
+<h3>Spinner</h3>
+<p>三种尺寸的加载旋转器。</p>
+<div class="cl-canvas" style="gap:24px;align-items:center">
+<div class="cl-spinner cl-spinner--sm"></div>
+<div class="cl-spinner cl-spinner--md"></div>
+<div class="cl-spinner cl-spinner--lg"></div>
+</div>
+</div>
+
+<div id="empty-state" class="cl-component-group">
+<h3>Empty State</h3>
+<p>空内容占位引导。</p>
+<div class="cl-canvas">
+<div class="cl-empty">
+<i class="ph-duotone ph-music-notes cl-empty-icon"></i>
+<div class="cl-empty-title">还没有音符</div>
+<div class="cl-empty-desc">选择画笔工具，在钢琴卷帘上点击来创建你的第一个旋律。</div>
+<button class="cl-btn cl-btn--primary"><i class="ph-duotone ph-pencil"></i> 开始创作</button>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ═══════ OVERLAYS ═══════ -->
+<section id="cat-overlays" class="cl-category-panel">
+
+<div id="modal" class="cl-component-group">
+<h3>Modal</h3>
+<p>模态对话框（含虚拟遮罩）。</p>
+<div class="cl-canvas" style="background:rgba(0,0,0,0.6);padding:60px;justify-content:center">
+<div class="cl-modal">
+<h4 style="font-size:18px;font-weight:600;margin-bottom:8px">保存更改？</h4>
+<p style="font-size:14px;color:var(--text2);margin-bottom:20px">当前项目有未保存的更改。保存后再关闭？</p>
+<div style="display:flex;gap:8px;justify-content:flex-end">
+<button class="cl-btn cl-btn--ghost">取消</button>
+<button class="cl-btn cl-btn--primary">保存</button>
+</div>
+</div>
+</div>
+<table class="cl-spec-table">
+<tr><th>Property</th><th>Value</th></tr>
+<tr><td>Background</td><td class="col-value">var(--surface1)</td></tr>
+<tr><td>Radius</td><td class="col-value">16px</td></tr>
+<tr><td>Shadow</td><td class="col-value">var(--shadow-3)</td></tr>
+<tr><td>Backdrop</td><td class="col-value">rgba(0,0,0,0.6) + blur(4px)</td></tr>
+</table>
+</div>
+
+<div id="popover" class="cl-component-group">
+<h3>Popover</h3>
+<p>小型弹出面板。</p>
+<div class="cl-canvas">
+<div class="cl-popover">
+<p style="font-weight:600;margin-bottom:4px">Grid: 1/16 Note</p>
+<p style="font-size:12px;color:var(--text2)">Snap interval: 120 ticks</p>
+</div>
+</div>
+</div>
+
+<div id="tooltip" class="cl-component-group">
+<h3>Tooltip</h3>
+<p>悬停提示气泡。</p>
+<div class="cl-canvas" style="gap:24px;align-items:center">
+<span class="cl-tooltip">Play (Space)</span>
+<span class="cl-tooltip" style="color:var(--accent)">Ctrl+Z to undo</span>
+</div>
+</div>
+
+<div id="accordion" class="cl-component-group">
+<h3>Accordion</h3>
+<p>可展开/折叠面板。</p>
+<div class="cl-canvas" style="width:100%;max-width:400px">
+<div class="cl-accordion is-open" style="width:100%">
+<button class="cl-accordion-header">Track Settings <i class="ph-duotone ph-caret-down"></i></button>
+<div class="cl-accordion-content">Instrument: Grand Piano · Channel: 1 · Program: 0</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+
+<div class="floating-bar">
+  <button class="mode-btn active" data-mode="dark"><i class="ph-duotone ph-moon"></i> Dark</button>
+  <button class="mode-btn" data-mode="light"><i class="ph-duotone ph-sun"></i> Light</button>
+</div>
+
+<script>
+document.querySelectorAll('.mode-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.documentElement.dataset.theme=btn.dataset.mode;
+    document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+function switchCat(cat){
+  document.querySelectorAll('.cl-category-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.cl-toc-category').forEach(h=>h.classList.remove('active'));
+  var p=document.getElementById('cat-'+cat);
+  var h=document.querySelector('.cl-toc-category[data-cat="'+cat+'"]');
+  if(p)p.classList.add('active');
+  if(h)h.classList.add('active');
+}
+document.querySelectorAll('.cl-toc-category').forEach(h=>{
+  h.addEventListener('click',()=>switchCat(h.dataset.cat));
+});
+document.querySelectorAll('.cl-toc-sub').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    switchCat(a.dataset.cat);
+    var t=document.querySelector(a.getAttribute('href'));
+    if(t)requestAnimationFrame(()=>t.scrollIntoView({behavior:'smooth'}));
+  });
+});
+var mainEl=document.querySelector('.cl-main');
+var groups=document.querySelectorAll('.cl-component-group');
+var tocSubs=document.querySelectorAll('.cl-toc-sub');
+mainEl.addEventListener('scroll',()=>{
+  var activeId=null;
+  groups.forEach(g=>{if(g.offsetTop-80<=mainEl.scrollTop)activeId=g.id;});
+  if(activeId)tocSubs.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+activeId));
+},{passive:true});
+document.querySelectorAll('a').forEach(a=>{
+  if(a.closest('.cl-toc'))return;
+  a.addEventListener('click',e=>e.preventDefault());
+});
+</script>
+</body>
+</html>

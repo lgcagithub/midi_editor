@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Merengue — Design Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500&family=JetBrains+Mono:wght@400&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2/src/duotone/style.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --background: #1A1819; --bg: var(--background);
+  --surface1: #242223; --surface2: #2E2927; --surface3: #423B38;
+  --border: #2E2927; --border-visible: #423B38;
+  --text1: #FAF9F8; --text2: #A89D96; --text3: #7A706A; --text4: #5C5450;
+  --accent: #FF6E82; --accent-subtle: #3D0D17;
+  --success: #4BC0A0; --success-bg: #0F2E28;
+  --warning: #F4A742; --warning-bg: #2E2412;
+  --error: #E5484D; --error-bg: #2E1515;
+  --font-display: "Fredoka", "Segoe UI", "Noto Sans SC", sans-serif;
+  --font-body: "Nunito Sans", "Segoe UI", "Noto Sans SC", sans-serif;
+  --font-mono: "JetBrains Mono", "Consolas", "Courier New", monospace;
+  --text-display: 36px; --text-h1: 28px; --text-h2: 22px; --text-h3: 18px;
+  --text-body: 14px; --text-body-sm: 12px; --text-caption: 11px; --text-label: 10px;
+  --space-2xs: 2px; --space-xs: 4px; --space-sm: 8px; --space-md: 16px;
+  --space-lg: 24px; --space-xl: 32px; --space-2xl: 48px; --space-3xl: 64px; --space-4xl: 96px;
+  --radius-element: 4px; --radius-control: 8px; --radius-component: 12px;
+  --radius-container: 16px; --radius-pill: 999px;
+  --ease-micro: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-standard: cubic-bezier(0.34, 1.3, 0.64, 1);
+  --ease-emphasis: cubic-bezier(0.32, 1.2, 0.64, 1);
+  --duration-micro: 150ms; --duration-standard: 250ms; --duration-emphasis: 400ms;
+  --shadow-1: 0 1px 2px rgba(0,0,0,0.20), 0 1px 4px rgba(0,0,0,0.30);
+  --shadow-2: 0 2px 8px rgba(0,0,0,0.30), 0 4px 16px rgba(0,0,0,0.20);
+  --shadow-3: 0 4px 16px rgba(0,0,0,0.40), 0 8px 32px rgba(0,0,0,0.30);
+  --note-coral: #FF5C72; --note-tangerine: #FFB347; --note-sky: #7EC8E3;
+  --note-lavender: #C3A6F4; --note-mint: #4BC0A0; --note-peach: #FF8A80;
+  --note-lemon: #FFE566; --note-lilac: #D4A5F6;
+}
+
+[data-theme="light"] {
+  --background: #FAF9F8; --bg: var(--background);
+  --surface1: #F5F2F0; --surface2: #E8E3DF; --surface3: #D4CDC7;
+  --border: #E8E3DF; --border-visible: #D4CDC7;
+  --text1: #242223; --text2: #5C5450; --text3: #7A706A; --text4: #A89D96;
+  --accent: #FF5C72; --accent-subtle: #FFF0F2;
+  --success-bg: #F0FDF6; --warning-bg: #FFFBF0; --error-bg: #FEF2F2;
+  --shadow-1: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-2: 0 2px 8px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-3: 0 4px 16px rgba(0,0,0,0.08), 0 8px 32px rgba(0,0,0,0.04);
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--text1);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding: 32px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Painterly hero background */
+body::before {
+  content: "";
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 30%, rgba(255, 92, 114, 0.12), transparent 60%),
+    radial-gradient(ellipse 50% 45% at 80% 20%, rgba(255, 179, 71, 0.10), transparent 65%),
+    radial-gradient(ellipse 70% 55% at 60% 75%, rgba(195, 166, 244, 0.08), transparent 60%),
+    radial-gradient(ellipse 55% 50% at 30% 85%, rgba(255, 138, 128, 0.07), transparent 60%);
+  opacity: 0.7;
+}
+
+[data-theme="light"] body::before {
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 30%, rgba(255, 92, 114, 0.08), transparent 60%),
+    radial-gradient(ellipse 50% 45% at 80% 20%, rgba(255, 179, 71, 0.07), transparent 65%),
+    radial-gradient(ellipse 70% 55% at 60% 75%, rgba(195, 166, 244, 0.05), transparent 60%);
+  opacity: 0.8;
+}
+
+.dashboard {
+  max-width: 1120px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+.header-left h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-display);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--text1);
+}
+.header-left h1 span { color: var(--accent); }
+.header-left p {
+  font-size: var(--text-body);
+  color: var(--text3);
+  margin-top: 4px;
+}
+
+/* Bento Grid */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: 180px 220px 200px 200px;
+  gap: 16px;
+}
+
+/* Cards */
+.card {
+  background: var(--surface1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-component);
+  padding: 20px;
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  transition: transform var(--duration-micro) var(--ease-micro), box-shadow var(--duration-micro) var(--ease-micro);
+}
+.card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-2);
+}
+.card-label {
+  font-size: var(--text-label);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text3);
+  margin-bottom: 8px;
+}
+
+/* Span helpers */
+.span-2 { grid-column: span 2; }
+.span-3 { grid-column: span 3; }
+.span-4 { grid-column: span 4; }
+.row-2 { grid-row: span 2; }
+
+/* Now Playing widget */
+.np-body { display: flex; gap: 16px; flex: 1; align-items: center; min-height: 0; }
+.np-cover {
+  width: 72px; height: 72px; border-radius: var(--radius-control);
+  background: linear-gradient(135deg, var(--note-coral), var(--note-tangerine));
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; color: #fff;
+}
+.np-info { flex: 1; min-width: 0; }
+.np-title { font-weight: 600; font-size: var(--text-body); color: var(--text1); margin-bottom: 2px; }
+.np-artist { font-size: var(--text-body-sm); color: var(--text2); }
+.np-time { font-family: var(--font-mono); font-size: var(--text-caption); color: var(--text3); margin-top: 6px; }
+.np-bar {
+  width: 100%; height: 4px; background: var(--surface3); border-radius: var(--radius-pill);
+  margin-top: 8px; overflow: hidden;
+}
+.np-bar-fill { width: 42%; height: 100%; background: var(--accent); border-radius: var(--radius-pill); }
+
+/* Big Metric */
+.metric-value {
+  font-family: var(--font-mono);
+  font-size: 48px;
+  font-weight: 400;
+  color: var(--text1);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-top: 4px;
+}
+.metric-label { font-size: var(--text-body-sm); color: var(--text3); margin-top: 6px; }
+.metric-grid { display: flex; gap: 24px; flex: 1; align-items: flex-end; padding-bottom: 4px; }
+
+/* Track List */
+.track-list { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+.track-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 10px; border-radius: var(--radius-control);
+  transition: background var(--duration-micro) var(--ease-micro);
+}
+.track-row:hover { background: var(--surface2); }
+.track-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.track-name { font-size: var(--text-body-sm); color: var(--text1); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track-count { font-family: var(--font-mono); font-size: var(--text-caption); color: var(--text3); }
+
+/* Transport */
+.transport-body { display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center; }
+.tp-btn {
+  width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: var(--text1);
+  background: var(--surface2);
+  transition: all var(--duration-micro) var(--ease-micro);
+}
+.tp-btn:hover { background: var(--surface3); transform: scale(1.05); }
+.tp-btn:active { transform: scale(0.95); }
+.tp-btn.play {
+  background: var(--accent); color: #fff;
+  width: 52px; height: 52px; font-size: 24px;
+}
+.tp-btn.play:hover { background: #E54D62; }
+
+/* BPM Display */
+.bpm-display { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.bpm-value {
+  font-family: var(--font-display);
+  font-size: 56px; font-weight: 500; line-height: 1;
+  color: var(--accent);
+}
+
+/* Volume meters */
+.meters { flex: 1; display: flex; gap: 4px; align-items: flex-end; min-height: 0; }
+.meter-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.meter-track {
+  width: 100%; height: 100%;
+  background: var(--surface3); border-radius: var(--radius-pill);
+  position: relative; overflow: hidden;
+  min-height: 80px;
+}
+.meter-fill {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  border-radius: var(--radius-pill);
+  transition: height 300ms ease;
+}
+.meter-label { font-size: var(--text-caption); color: var(--text3); font-family: var(--font-mono); }
+
+/* Activity Feed */
+.feed { flex: 1; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+.feed-item { display: flex; align-items: center; gap: 10px; }
+.feed-icon {
+  width: 28px; height: 28px; border-radius: var(--radius-element);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.feed-text { font-size: var(--text-body-sm); color: var(--text2); flex: 1; min-width: 0; }
+.feed-time { font-family: var(--font-mono); font-size: var(--text-caption); color: var(--text3); white-space: nowrap; }
+
+/* Quick Actions */
+.actions { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.action-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; border-radius: var(--radius-control); border: 1px solid var(--border);
+  background: var(--surface2); cursor: pointer;
+  transition: all var(--duration-micro) var(--ease-micro);
+  font-family: var(--font-body); font-size: var(--text-caption); color: var(--text2);
+  padding: 12px 8px;
+}
+.action-btn:hover { background: var(--surface3); color: var(--text1); border-color: var(--border-visible); transform: scale(1.02); }
+.action-btn:active { transform: scale(0.97); }
+.action-btn i { font-size: 22px; color: var(--accent); }
+
+/* Token Key widget */
+.token-body { flex: 1; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+.token-row { display: flex; align-items: center; gap: 8px; }
+.token-swatches { display: flex; gap: 4px; }
+.token-swatch {
+  width: 20px; height: 20px; border-radius: var(--radius-element);
+  border: 1px solid var(--border); flex-shrink: 0;
+}
+.token-label-text { font-size: var(--text-caption); color: var(--text2); width: 52px; flex-shrink: 0; }
+.type-sample { font-size: var(--text-body); color: var(--text1); }
+.type-sample.display { font-family: var(--font-display); font-size: 24px; font-weight: 500; }
+.type-sample.mono { font-family: var(--font-mono); font-size: 13px; }
+
+/* Recent Projects */
+.proj-list { flex: 1; display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+.proj-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 10px; border-radius: var(--radius-control);
+  transition: background var(--duration-micro) var(--ease-micro);
+  cursor: pointer;
+}
+.proj-row:hover { background: var(--surface2); }
+.proj-name { font-size: var(--text-body-sm); color: var(--text1); flex: 1; }
+.proj-date { font-family: var(--font-mono); font-size: var(--text-caption); color: var(--text3); }
+
+/* Floating mode bar */
+.floating-bar {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  z-index: 100; display: flex; align-items: center; gap: 4px;
+  padding: 4px; border-radius: 999px;
+  background: var(--surface1); border: 1.5px solid var(--border);
+  box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.12);
+  transition: background 500ms ease, border-color 500ms ease;
+}
+.mode-btn {
+  height: 32px; border-radius: 999px; border: none;
+  background: transparent; cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 14px;
+  font-family: var(--font-body); font-size: 12px; font-weight: 500;
+  color: var(--text3);
+  transition: background 200ms var(--ease-micro), color 200ms var(--ease-micro);
+  outline: none;
+}
+.mode-btn:hover { color: var(--text1); }
+.mode-btn.active { background: var(--surface3); color: var(--text1); }
+.mode-btn i { font-size: 14px; }
+
+/* Ring gauge */
+.gauge-wrap { display: flex; align-items: center; gap: 20px; flex: 1; }
+.gauge-ring { flex-shrink: 0; }
+.gauge-ring circle { transition: stroke-dashoffset 1s var(--ease-standard); }
+.gauge-info { display: flex; flex-direction: column; }
+.gauge-big { font-family: var(--font-mono); font-size: 32px; color: var(--text1); line-height: 1; }
+.gauge-label { font-size: var(--text-body-sm); color: var(--text3); margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="dashboard">
+  <div class="header">
+    <div class="header-left">
+      <h1>Merengue <span>.</span></h1>
+      <p>设计语言预览 — MIDI 编辑器 · 暖色暗底 · 糖果音符</p>
+    </div>
+  </div>
+
+  <div class="bento">
+    <!-- Now Playing -->
+    <div class="card">
+      <div class="card-label">正在播放</div>
+      <div class="np-body">
+        <div class="np-cover"><i class="ph-duotone ph-music-notes"></i></div>
+        <div class="np-info">
+          <div class="np-title">夏日序曲 — Track 2</div>
+          <div class="np-artist">Piano + Strings</div>
+          <div class="np-time">00:42 / 01:38</div>
+          <div class="np-bar"><div class="np-bar-fill"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BPM -->
+    <div class="card">
+      <div class="card-label">速度</div>
+      <div class="bpm-display">
+        <div class="bpm-value">120</div>
+        <div style="font-size:var(--text-body-sm);color:var(--text3);margin-top:4px;">BPM · 4/4 拍</div>
+      </div>
+    </div>
+
+    <!-- Transport Controls -->
+    <div class="card">
+      <div class="card-label">走带控制</div>
+      <div class="transport-body">
+        <button class="tp-btn"><i class="ph-duotone ph-skip-back"></i></button>
+        <button class="tp-btn play"><i class="ph-duotone ph-play"></i></button>
+        <button class="tp-btn"><i class="ph-duotone ph-skip-forward"></i></button>
+      </div>
+    </div>
+
+    <!-- Note Metrics -->
+    <div class="card">
+      <div class="card-label">音符统计</div>
+      <div class="metric-grid">
+        <div>
+          <div class="metric-value">847</div>
+          <div class="metric-label">总音符数</div>
+        </div>
+        <div>
+          <div class="metric-value" style="font-size:36px;color:var(--accent);">3</div>
+          <div class="metric-label">选中</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Track List (span 2) -->
+    <div class="card span-2">
+      <div class="card-label">音轨列表</div>
+      <div class="track-list">
+        <div class="track-row">
+          <div class="track-dot" style="background:var(--note-coral)"></div>
+          <span class="track-name">钢琴旋律</span>
+          <span class="track-count">312</span>
+        </div>
+        <div class="track-row">
+          <div class="track-dot" style="background:var(--note-sky)"></div>
+          <span class="track-name">弦乐和声</span>
+          <span class="track-count">205</span>
+        </div>
+        <div class="track-row">
+          <div class="track-dot" style="background:var(--note-lavender)"></div>
+          <span class="track-name">贝斯线</span>
+          <span class="track-count">178</span>
+        </div>
+        <div class="track-row">
+          <div class="track-dot" style="background:var(--note-mint)"></div>
+          <span class="track-name">打击乐</span>
+          <span class="track-count">152</span>
+        </div>
+        <div class="track-row" style="opacity:0.5">
+          <div class="track-dot" style="background:var(--note-tangerine)"></div>
+          <span class="track-name">合成器 (静音)</span>
+          <span class="track-count">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Volume Meters (span 2) -->
+    <div class="card span-2">
+      <div class="card-label">音量电平</div>
+      <div class="meters">
+        <div class="meter-col"><div class="meter-track"><div class="meter-fill" style="height:72%;background:var(--note-coral)"></div></div><span class="meter-label">Pno</span></div>
+        <div class="meter-col"><div class="meter-track"><div class="meter-fill" style="height:55%;background:var(--note-sky)"></div></div><span class="meter-label">Str</span></div>
+        <div class="meter-col"><div class="meter-track"><div class="meter-fill" style="height:85%;background:var(--note-lavender)"></div></div><span class="meter-label">Bas</span></div>
+        <div class="meter-col"><div class="meter-track"><div class="meter-fill" style="height:90%;background:var(--note-mint)"></div></div><span class="meter-label">Drm</span></div>
+        <div class="meter-col"><div class="meter-track"><div class="meter-fill" style="height:30%;background:var(--note-tangerine)"></div></div><span class="meter-label">Syn</span></div>
+      </div>
+    </div>
+
+    <!-- Activity Feed (span 2) -->
+    <div class="card span-2">
+      <div class="card-label">最近活动</div>
+      <div class="feed">
+        <div class="feed-item">
+          <div class="feed-icon" style="background:var(--accent-subtle);color:var(--accent);"><i class="ph-duotone ph-plus-circle"></i></div>
+          <span class="feed-text">在 Track 1 添加了 <strong>6 个音符</strong> (C4–G4)</span>
+          <span class="feed-time">12:03</span>
+        </div>
+        <div class="feed-item">
+          <div class="feed-icon" style="background:var(--success-bg);color:var(--success);"><i class="ph-duotone ph-floppy-disk"></i></div>
+          <span class="feed-text">保存项目 <strong>summer_demo.mid</strong></span>
+          <span class="feed-time">11:47</span>
+        </div>
+        <div class="feed-item">
+          <div class="feed-icon" style="background:var(--warning-bg);color:var(--warning);"><i class="ph-duotone ph-arrows-out-cardinal"></i></div>
+          <span class="feed-text">移动 <strong>3 个音符</strong> +2 semitones</span>
+          <span class="feed-time">11:32</span>
+        </div>
+        <div class="feed-item">
+          <div class="feed-icon" style="background:var(--error-bg);color:var(--error);"><i class="ph-duotone ph-eraser"></i></div>
+          <span class="feed-text">删除了 Track 3 的 <strong>12 个音符</strong></span>
+          <span class="feed-time">10:58</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Token Key (span 2) -->
+    <div class="card span-2">
+      <div class="card-label">Token 参考</div>
+      <div class="token-body">
+        <div class="token-row">
+          <span class="token-label-text">背景</span>
+          <div class="token-swatches">
+            <div class="token-swatch" style="background:#1A1819" title="background"></div>
+            <div class="token-swatch" style="background:#242223" title="surface1"></div>
+            <div class="token-swatch" style="background:#2E2927" title="surface2"></div>
+            <div class="token-swatch" style="background:#423B38" title="surface3"></div>
+          </div>
+        </div>
+        <div class="token-row">
+          <span class="token-label-text">强调</span>
+          <div class="token-swatches">
+            <div class="token-swatch" style="background:#FF6E82" title="accent"></div>
+            <div class="token-swatch" style="background:#3D0D17" title="accent-subtle"></div>
+            <div class="token-swatch" style="background:#4BC0A0" title="success"></div>
+            <div class="token-swatch" style="background:#F4A742" title="warning"></div>
+            <div class="token-swatch" style="background:#E5484D" title="error"></div>
+          </div>
+        </div>
+        <div class="token-row">
+          <span class="token-label-text">文字</span>
+          <div class="token-swatches">
+            <div class="token-swatch" style="background:#FAF9F8" title="text1"></div>
+            <div class="token-swatch" style="background:#A89D96" title="text2"></div>
+            <div class="token-swatch" style="background:#7A706A" title="text3"></div>
+            <div class="token-swatch" style="background:#5C5450" title="text4"></div>
+          </div>
+        </div>
+        <div class="token-row" style="margin-top:4px;">
+          <span class="type-sample display">Aa Display</span>
+          <span class="type-sample">Aa Body</span>
+          <span class="type-sample mono">Aa Mono</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+      <div class="card-label">快捷操作</div>
+      <div class="actions">
+        <button class="action-btn"><i class="ph-duotone ph-file-plus"></i> 新建</button>
+        <button class="action-btn"><i class="ph-duotone ph-folder-open"></i> 打开</button>
+        <button class="action-btn"><i class="ph-duotone ph-floppy-disk"></i> 保存</button>
+        <button class="action-btn"><i class="ph-duotone ph-export"></i> 导出</button>
+      </div>
+    </div>
+
+    <!-- Recent Projects -->
+    <div class="card">
+      <div class="card-label">最近项目</div>
+      <div class="proj-list">
+        <div class="proj-row"><span class="proj-name">summer_demo.mid</span><span class="proj-date">12:03</span></div>
+        <div class="proj-row"><span class="proj-name">piano_sketch.mid</span><span class="proj-date">昨日</span></div>
+        <div class="proj-row"><span class="proj-name">orchestra_WIP.mid</span><span class="proj-date">5/20</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="floating-bar">
+  <button class="mode-btn active" data-mode="dark"><i class="ph-duotone ph-moon"></i> Dark</button>
+  <button class="mode-btn" data-mode="light"><i class="ph-duotone ph-sun"></i> Light</button>
+</div>
+
+<script>
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.documentElement.dataset.theme = btn.dataset.mode;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+document.querySelectorAll('a').forEach(a => a.addEventListener('click', e => e.preventDefault()));
+</script>
+</body>
+</html>
