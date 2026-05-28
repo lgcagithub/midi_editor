@@ -45,19 +45,17 @@
 - **WHEN** whiteKeyHeight=20px
 - **THEN** blackKeyHeight = 20 × 7 / 12 ≈ 11.67px
 
-### Requirement: First black key offset
+### Requirement: 88-key grid origin (keyOffset)
 
-首个黑键 A#0 的位置 SHALL 按以下公式计算：
+系统 SHALL 定义 `keyOffset` 作为 88 键网格（keyIndex=0 对应 A0）的逻辑起始位置。该偏移用于将 88 个半音槽位映射到键盘区域的物理坐标：
 
-- 纵向：`firstBlackKeyY = keyboardTop + whiteKeyHeight × 2 - blackKeyHeight × 2`
-- 横向：`firstBlackKeyX = keyboardLeft + whiteKeyWidth × 2 - blackKeyWidth × 2`
+- **横向**：`keyOffset = whiteKeyWidth × 2 - blackKeyWidth × 3`（源自 A0=B0 不完整八度中 A#0 的定位。`firstBlackKeyX = whiteKeyWidth × 2 - blackKeyWidth × 2`，`keyOffset = firstBlackKeyX - blackKeyWidth`）
+- **纵向**：`keyOffset = whiteKeyHeight - blackKeyHeight`（Y 轴倒置后 C8 在顶部、A0 在底部，此偏移与 Piano Roll 坐标映射器的 `pitchOffset` 一致，确保键盘网格与音轨行对齐）
 
-该公式基于：0 区有 2 个白键（A0, B0），A#0 覆盖两个白键的连接处，起始位置从 0 区右侧往回退 2 个黑键尺寸。
+#### Scenario: Vertical keyOffset aligns with piano roll
 
-#### Scenario: First black key A#0 position
-
-- **WHEN** whiteKeyHeight=20px, blackKeyHeight=11.667px, keyboardTop=0
-- **THEN** firstBlackKeyY = 0 + 40 - 23.334 = 16.666px
+- **WHEN** whiteKeyHeight=20px, blackKeyHeight=20 × 7/12 ≈ 11.667px
+- **THEN** `keyOffset = 20 - 11.667 = 8.333px`，与 coordinate-mapper 的 `pitchOffset = noteHeight × 5/7` 数值相等
 
 ### Requirement: Two-layer drawing order
 
