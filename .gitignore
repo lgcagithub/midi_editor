@@ -21,6 +21,9 @@ build/
 # Brainstorming assets
 .superpowers/
 
+# Knowledge graph
+graphify-out/
+
 # OS
 .DS_Store
 Thumbs.db

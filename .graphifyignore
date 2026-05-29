@@ -1,0 +1,15 @@
+# .graphifyignore
+node_modules/
+dist/
+*.generated.py
+
+# only index src/, ignore everything else
+*
+!src/
+!src/**
+!openspec/
+!openspec/**
+!docs/
+!docs/**
+!doc/
+!doc/**
