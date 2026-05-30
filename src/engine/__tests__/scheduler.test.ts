@@ -9,7 +9,7 @@ import { Scheduler } from '../scheduler'
 
 function createMockSoundSource(): SoundSource {
   return {
-    noteOn: vi.fn(),
+    noteOn: vi.fn<(pitch: number, velocity: number, when: number, endTime?: number) => void>(),
     noteOff: vi.fn(),
     setInstrument: vi.fn(),
     dispose: vi.fn(),
@@ -204,7 +204,8 @@ describe('Scheduler', () => {
       // 首次 tick: wasPlaying=false → 重置窗口到 10.0
       // window = [10.0, 10.1]
       // note(60) startAudio = 10.0 + 0 = 10.0 → 在窗内
-      expect(mockSound.noteOn).toHaveBeenCalledWith(60, 100, 10.0)
+      // endAudio = 10.0 + 0.5 = 10.5 → 同时传入包络调度
+      expect(mockSound.noteOn).toHaveBeenCalledWith(60, 100, 10.0, 10.5)
     })
 
     it('调度窗口外音符不被调度', () => {
@@ -249,7 +250,7 @@ describe('Scheduler', () => {
       })
 
       scheduler.tick()
-      expect(mockSound.noteOn).toHaveBeenCalledWith(60, 100, 10.0)
+      expect(mockSound.noteOn).toHaveBeenCalledWith(60, 100, 10.0, expect.any(Number))
       expect(mockSound.noteOff).toHaveBeenCalledWith(60, expect.any(Number))
     })
 
@@ -409,8 +410,8 @@ describe('Scheduler', () => {
 
       // wasPlaying 检测到 transition: 重置窗口到 50.0
       // 窗口 = [50.0, 50.1]
-      // note(72) startAudio = 50.0 → 在窗内
-      expect(mockSound.noteOn).toHaveBeenCalledWith(72, 100, 50.0)
+      // note(72) startAudio = 50.0 → 在窗内，endAudio = 50.0 + 0.5 = 50.5
+      expect(mockSound.noteOn).toHaveBeenCalledWith(72, 100, 50.0, 50.5)
     })
   })
 })

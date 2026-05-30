@@ -97,7 +97,7 @@ export class Scheduler {
           (tickToSeconds(note.startTick + note.duration, tempoMap, ppq) - startSongTime)
 
         if (noteStartAudioTime >= windowStart && noteStartAudioTime < windowEnd) {
-          this.soundSource.noteOn(note.pitch, note.velocity, noteStartAudioTime)
+          this.soundSource.noteOn(note.pitch, note.velocity, noteStartAudioTime, noteEndAudioTime)
         }
 
         if (noteEndAudioTime >= windowStart && noteEndAudioTime < windowEnd) {
