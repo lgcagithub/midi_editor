@@ -51,6 +51,8 @@ export class OscillatorBank implements SoundSource {
       gain.gain.setValueAtTime(0, when)
       gain.gain.linearRampToValueAtTime(peakGain, attackEnd)
       gain.gain.setTargetAtTime(peakGain * DECAY_TARGET_FACTOR, attackEnd, timeConstant)
+      // 确保 gain 在 endTime 精确到达 0，消除 noteOff 时的残余电平
+      gain.gain.linearRampToValueAtTime(0, endTime)
     } else {
       // 无 endTime：恒定增益（预览音符）
       gain.gain.setValueAtTime(peakGain, when)
