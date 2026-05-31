@@ -98,7 +98,13 @@ function createTestStore(overrides?: Partial<StoreState>) {
       })),
     pause: () => set({ transportState: 'paused' }),
     stop: () => set({ transportState: 'stopped', currentTick: 0 }),
-    seekTo: () => {},
+    seekTo: (tick) =>
+      set((s) => ({
+        startTick: tick,
+        lastStartTick: tick,
+        currentTick: tick,
+        startTime: s.transportState === 'playing' ? performance.now() : s.startTime,
+      })),
     setPauseBehavior: () => {},
     setEndBehavior: () => {},
     setAutoFollow: () => {},
@@ -422,6 +428,115 @@ describe('Scheduler', () => {
       // 窗口 = [50.0, 50.1]
       // note(72) startAudio = 50.0 → 在窗内，endAudio = 50.0 + 0.5 = 50.5
       expect(mockSound.noteOn).toHaveBeenCalledWith(72, 100, 50.0, 50.5)
+    })
+  })
+
+  describe('resetScheduleWindow', () => {
+    it('should move window start after resetScheduleWindow', () => {
+      Object.defineProperty(mockCtx, 'currentTime', { value: 10.0, configurable: true })
+      store.setState({
+        transportState: 'playing',
+        startTime: 10.0,
+        startTick: 0,
+        tempoMap: [{ tick: 0, bpm: 120 }],
+        ppq: 480,
+        tracks: [
+          {
+            id: 't-1',
+            name: 'Test',
+            instrument: 0,
+            color: '#4A90D9',
+            notes: [
+              { id: 'n-1', pitch: 60, startTick: 0, duration: 480, velocity: 100 },
+            ],
+          },
+        ],
+      })
+      // First tick: schedules note, sets lastScheduledTime
+      scheduler.tick()
+      expect(mockSound.noteOn).toHaveBeenCalled()
+      vi.clearAllMocks()
+
+      // Advance time (less than 0.5s to avoid background compensation)
+      Object.defineProperty(mockCtx, 'currentTime', { value: 10.3 })
+      // Reset window to current audio time
+      scheduler.resetScheduleWindow()
+
+      // Second tick: window should start from 10.3, note at tick 0 (audio=10.0) is outside
+      Object.defineProperty(mockCtx, 'currentTime', { value: 10.325 })
+      scheduler.tick()
+      expect(mockSound.noteOn).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('endBehavior', () => {
+    beforeEach(() => {
+      Object.defineProperty(mockCtx, 'currentTime', { value: 10.0, configurable: true })
+      store.setState({
+        transportState: 'playing',
+        startTime: 10.0,
+        startTick: 0,
+        tempoMap: [{ tick: 0, bpm: 120 }],
+        ppq: 480,
+        tracks: [
+          {
+            id: 't-1',
+            name: 'Test',
+            instrument: 0,
+            color: '#4A90D9',
+            notes: [
+              // maxEndTick = 0 + 960 = 960
+              { id: 'n-1', pitch: 60, startTick: 0, duration: 960, velocity: 100 },
+            ],
+          },
+        ],
+      })
+    })
+
+    it('endBehavior=stop stops when currentTick reaches maxEndTick', () => {
+      store.setState({ endBehavior: 'stop' })
+      // First tick to initialize wasPlaying
+      scheduler.tick()
+      vi.clearAllMocks()
+
+      // Advance 2s → currentTick = 960, equals maxEndTick
+      Object.defineProperty(mockCtx, 'currentTime', { value: 12.0 })
+      scheduler.tick()
+
+      const state = store.getState()
+      expect(state.transportState).toBe('stopped')
+    })
+
+    it('endBehavior=loop seeks to 0 when currentTick reaches maxEndTick', () => {
+      store.setState({ endBehavior: 'loop' })
+      // First tick to initialize wasPlaying
+      scheduler.tick()
+      vi.clearAllMocks()
+
+      // Advance 2s → currentTick = 960, equals maxEndTick
+      Object.defineProperty(mockCtx, 'currentTime', { value: 12.0 })
+      scheduler.tick()
+
+      const state = store.getState()
+      expect(state.startTick).toBe(0) // seekTo(0) was called
+      expect(state.transportState).toBe('playing') // loop keeps playing
+    })
+
+    it('no end-of-project action when no notes exist', () => {
+      store.setState({
+        endBehavior: 'stop',
+        tracks: [], // no notes → maxEndTick = 0
+      })
+      // First tick to initialize wasPlaying
+      scheduler.tick()
+      vi.clearAllMocks()
+
+      // Advance 10s → currentTick = 9600, but maxEndTick = 0 (no notes)
+      Object.defineProperty(mockCtx, 'currentTime', { value: 20.0 })
+      scheduler.tick()
+
+      const state = store.getState()
+      expect(state.transportState).toBe('playing') // not stopped because no notes
     })
   })
 })

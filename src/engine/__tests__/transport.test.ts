@@ -84,7 +84,13 @@ function createTestStore(overrides?: Partial<StoreState>) {
       })),
     pause: () => set({ transportState: 'paused' }),
     stop: () => set({ transportState: 'stopped', currentTick: 0 }),
-    seekTo: () => {},
+    seekTo: (tick) =>
+      set((s) => ({
+        startTick: tick,
+        lastStartTick: tick,
+        currentTick: tick,
+        startTime: s.transportState === 'playing' ? performance.now() : s.startTime,
+      })),
     setPauseBehavior: () => {},
     setEndBehavior: () => {},
     setAutoFollow: () => {},
@@ -214,6 +220,88 @@ describe('Transport', () => {
 
       const transport = new Transport(mockCtx, store)
       expect(transport.getCurrentTick()).toBe(100)
+    })
+  })
+
+  describe('seekTo', () => {
+    it('seekTo while stopped updates currentTick', () => {
+      const transport = new Transport(mockCtx, store)
+      transport.seekTo(480)
+      const state = store.getState()
+      expect(state.currentTick).toBe(480)
+    })
+
+    it('seekTo while playing resets startTime and startTick', () => {
+      store.setState({ transportState: 'playing', startTime: 10.0, startTick: 0 })
+      Object.defineProperty(mockCtx, 'currentTime', { value: 12.0 })
+
+      const transport = new Transport(mockCtx, store)
+      transport.seekTo(960)
+
+      const state = store.getState()
+      expect(state.startTick).toBe(960)
+      expect(state.startTime).toBe(12.0) // overwritten by audioCtx.currentTime
+    })
+
+    it('seekTo while paused updates currentTick', () => {
+      store.setState({ transportState: 'paused', currentTick: 240 })
+
+      const transport = new Transport(mockCtx, store)
+      transport.seekTo(480)
+
+      const state = store.getState()
+      expect(state.currentTick).toBe(480)
+    })
+
+    it('seekTo updates lastStartTick', () => {
+      store.setState({ lastStartTick: 0 })
+
+      const transport = new Transport(mockCtx, store)
+      transport.seekTo(960)
+
+      const state = store.getState()
+      expect(state.lastStartTick).toBe(960)
+    })
+  })
+
+  describe('pauseBehavior', () => {
+    it('pause with behavior=keep retains currentTick from getCurrentTick', () => {
+      store.setState({
+        transportState: 'playing',
+        startTime: 10.0,
+        startTick: 0,
+        lastStartTick: 0,
+        pauseBehavior: 'keep',
+        tempoMap: [{ tick: 0, bpm: 120 }],
+        ppq: 480,
+      })
+      Object.defineProperty(mockCtx, 'currentTime', { value: 11.0 })
+
+      const transport = new Transport(mockCtx, store)
+      transport.pause()
+
+      const state = store.getState()
+      expect(state.transportState).toBe('paused')
+      // At 120BPM/480PPQ, 1s elapsed = 960 ticks
+      expect(state.currentTick).toBe(960)
+    })
+
+    it('pause with behavior=return jumps to lastStartTick', () => {
+      store.setState({
+        transportState: 'playing',
+        startTime: 10.0,
+        startTick: 480,
+        lastStartTick: 480,
+        pauseBehavior: 'return',
+      })
+      Object.defineProperty(mockCtx, 'currentTime', { value: 12.0 })
+
+      const transport = new Transport(mockCtx, store)
+      transport.pause()
+
+      const state = store.getState()
+      expect(state.transportState).toBe('paused')
+      expect(state.currentTick).toBe(480) // jumps back to lastStartTick
     })
   })
 })
