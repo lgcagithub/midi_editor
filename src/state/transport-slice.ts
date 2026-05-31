@@ -70,12 +70,11 @@ export const createTransportSlice: StateCreator<
     }),
 
   seekTo: (tick) =>
-    set((state) => ({
+    set({
       startTick: tick,
       lastStartTick: tick,
-      startTime: state.transportState === 'playing' ? performance.now() : state.startTime,
       currentTick: tick,
-    })),
+    }),
 
   setPauseBehavior: (v) => set({ pauseBehavior: v }),
 
