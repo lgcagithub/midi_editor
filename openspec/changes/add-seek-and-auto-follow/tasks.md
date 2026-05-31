@@ -22,7 +22,7 @@
 - [ ] 4.1 新建 `src/renderer/ruler-renderer.ts` — `RulerRenderer` 类，包含：
   - 小节号、节拍线（major/minor）密度自适应绘制
   - 播放光标三角指示器
-  - 底部 1px 分隔线
+  - 容器 `border-bottom: 1px solid var(--border)`（box-sizing: border-box，线在 rulerHeight 内部）
   - Merengue 暗色主题样式（JetBrains Mono、--text3、--border、--accent）
 - [ ] 4.2 Ruler 密度自适应逻辑：根据 `pixelsPerBeat` 动态决定显示层级（完整 → 小节号 → 跳过标签）
 - [ ] 4.3 `RulerRenderer` 鼠标事件：mousedown → seekTo（点击 seek），mousemove（拖拽中）→ 连续 seekTo（scrubbing），mouseup → 结束 scrubbing
@@ -31,7 +31,7 @@
 ## 5. App 布局改造
 
 - [ ] 5.1 `App.tsx` mainStyle 区域从单行 flex 改为 2×2 网格：Col 1（corner spacer + KeyboardView）+ Col 2（RulerView + PianoRollView）
-- [ ] 5.2 Corner spacer：72px 宽、rulerHeight 高的空白 `<div>`，背景 `--bg`，底部 `--border` 分隔线
+- [ ] 5.2 Corner spacer：72px 宽、rulerHeight 高的空白 `<div>`，`background: var(--bg, #1A1819)`，`box-sizing: border-box`，`border-bottom: 1px solid var(--border, #2E2927)`（线在内部，不破坏对齐）
 - [ ] 5.3 确保 RulerView 的 canvas 宽度与 PianoRollView 的 canvas 宽度同步（共享 Col 2 的 flex:1 宽度）
 
 ## 6. Smooth Auto-Follow

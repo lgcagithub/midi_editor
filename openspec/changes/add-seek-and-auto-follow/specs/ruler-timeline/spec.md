@@ -27,7 +27,7 @@
 | ≥ 20px | 小节号（偶数跳过，如 1, 3, 5...）+ major 线 |
 | < 20px | 小节号（间隔更大）+ major 线 |
 
-小节号使用 `var(--text3, #7A6E68)` 颜色，JetBrains Mono 字体。标尺底部有 1px 分隔线，颜色 `var(--border, #2E2927)`。
+小节号使用 `var(--text3, #7A6E68)` 颜色，JetBrains Mono 字体。标尺容器底部渲染 1px 分隔线（`border-bottom: 1px solid var(--border, #2E2927)`），分隔线在容器 `box-sizing: border-box` 范围内，不额外增加高度，确保 Piano Roll 与键盘对齐不被破坏。
 
 #### Scenario: Zoomed-in ruler shows full details
 
@@ -86,7 +86,7 @@
 标尺 SHALL 遵循 Merengue 设计语言的暗色主题：
 
 - 背景色 `var(--bg, #1A1819)`
-- 底部分隔线 `var(--border, #2E2927)` 1px
+- 容器底部分隔线（`border-bottom`）`var(--border, #2E2927)` 1px，位于 `box-sizing: border-box` 范围内
 - 小节号 JetBrains Mono 11px, `var(--text3, #7A6E68)`
 - 拍号标记 JetBrains Mono 10px, `var(--text3, #7A6E68)` with 0.7 opacity
 - Major 线 `var(--border, #2E2927)` 1px

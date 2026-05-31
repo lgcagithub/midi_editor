@@ -84,7 +84,7 @@
 
 ### Requirement: Ruler corner spacer
 
-系统 SHALL 在标尺行左侧渲染与键盘等宽（72px）的角落空白区，背景色 `var(--bg, #1A1819)`，底部有 1px 分隔线 `var(--border, #2E2927)`。角落区不可交互。
+系统 SHALL 在标尺行左侧渲染与键盘等宽（72px）的角落空白区，背景色 `var(--bg, #1A1819)`，容器底部 `border-bottom: 1px solid var(--border, #2E2927)`。分隔线通过 `box-sizing: border-box` 在容器高度内部实现，不额外增加高度，确保键盘与 Piano Roll 的垂直对齐不被破坏。角落区不可交互。
 
 #### Scenario: Corner spacer matches keyboard width
 
