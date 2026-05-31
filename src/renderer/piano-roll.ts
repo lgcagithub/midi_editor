@@ -9,7 +9,7 @@ import type { StoreApi, UseBoundStore } from 'zustand'
 import type { StoreState } from '@/state/store'
 import type { TransportState } from '@/state/transport-slice'
 import type { TempoEvent } from '@/types'
-import { createCoordinateMapper, type CoordinateMapper, type Orientation } from './coordinate-mapper'
+import { createCoordinateMapper, createMapperFromStore, type CoordinateMapper, type Orientation } from './coordinate-mapper'
 import { renderGrid } from './grid-renderer'
 import { renderNotes } from './note-renderer'
 import { renderCursor } from './cursor-renderer'
@@ -292,13 +292,13 @@ export class PianoRollOrchestrator {
 
   private updateMapper(): void {
     const state = this.getState()
-    this.mapper = createCoordinateMapper(
-      state.orientation,
-      state.viewport.zoomX,
-      state.viewport.noteHeight,
-      state.tempoMap,
-      state.ppq,
-    )
+    this.mapper = createMapperFromStore({
+      orientation: state.orientation,
+      zoomX: state.viewport.zoomX,
+      noteHeight: state.viewport.noteHeight,
+      tempoMap: state.tempoMap,
+      ppq: state.ppq,
+    })
     this.prevOrientation = state.orientation
     this.prevZoomX = state.viewport.zoomX
     this.prevZoomY = state.viewport.zoomY

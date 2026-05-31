@@ -11,7 +11,7 @@
 import { useRef, useEffect } from 'react'
 import { useStore } from '@/state/store'
 import { RulerRenderer } from '@/renderer/ruler-renderer'
-import { createCoordinateMapper } from '@/renderer/coordinate-mapper'
+import { createMapperFromStore } from '@/renderer/coordinate-mapper'
 
 // ============================================================
 // RulerView 组件
@@ -47,13 +47,9 @@ export default function RulerView(): JSX.Element {
     updateCanvasSize()
 
     // 创建 CoordinateMapper
-    const mapper = createCoordinateMapper(
-      orientation,
-      zoomX,
-      noteHeight,
-      tempoMap,
-      ppq,
-    )
+    const mapper = createMapperFromStore({
+      orientation, zoomX, noteHeight, tempoMap, ppq,
+    })
 
     // 创建渲染器
     const renderer = new RulerRenderer(canvas, {
@@ -103,13 +99,9 @@ export default function RulerView(): JSX.Element {
     const renderer = rendererRef.current
     if (!renderer) return
 
-    const mapper = createCoordinateMapper(
-      orientation,
-      zoomX,
-      noteHeight,
-      tempoMap,
-      ppq,
-    )
+    const mapper = createMapperFromStore({
+      orientation, zoomX, noteHeight, tempoMap, ppq,
+    })
     renderer.updateMapper(mapper)
     renderer.render()
   }, [orientation, zoomX, noteHeight, tempoMap, ppq])

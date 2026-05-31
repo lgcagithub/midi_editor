@@ -117,3 +117,30 @@ export function createCoordinateMapper(
     },
   }
 }
+
+// ============================================================
+// 从 Store 状态创建 mapper 的共享工厂
+// ============================================================
+
+/** 创建 mapper 所需的 store 状态子集 */
+export interface MapperStoreSnapshot {
+  orientation: Orientation
+  zoomX: number
+  noteHeight: number
+  tempoMap: TempoEvent[]
+  ppq: number
+}
+
+/**
+ * 从 store 快照创建 CoordinateMapper。
+ * RulerView 和 PianoRollOrchestrator 共享此工厂，确保使用相同逻辑。
+ */
+export function createMapperFromStore(snapshot: MapperStoreSnapshot): CoordinateMapper {
+  return createCoordinateMapper(
+    snapshot.orientation,
+    snapshot.zoomX,
+    snapshot.noteHeight,
+    snapshot.tempoMap,
+    snapshot.ppq,
+  )
+}
