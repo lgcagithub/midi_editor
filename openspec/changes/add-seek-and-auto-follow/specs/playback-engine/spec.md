@@ -21,7 +21,8 @@ Transport 状态 SHALL 包含以下字段：
 - `currentTick`: number — 当前播放位置
 - `startTime`: number — 本次 play 开始的 `AudioContext.currentTime`
 - `startTick`: number — 本次 play 开始时的 cursor tick
-- `stopBehavior`: `'reset'` | `'keep'` — stop 后的 cursor 行为（默认 `'reset'`）
+- `lastStartTick`: number — 最近一次 `play()` 或 `seekTo()` 设置 `startTick` 时的值，用于 `stopBehavior='return'`
+- `stopBehavior`: `'reset'` | `'return'` — stop 后的 cursor 行为（默认 `'reset'`）。`reset` 回到 tick 0；`return` 回到 `lastStartTick`，即上次开始播放或 seek 的位置
 - `endBehavior`: `'stop'` | `'loop'` — 播放到项目末尾的行为（默认 `'stop'`）
 - `autoFollow`: boolean — 播放时是否自动跟随光标（默认 `true`）
 
@@ -45,10 +46,10 @@ Transport 状态 SHALL 包含以下字段：
 - **WHEN** stopBehavior='reset'，state=PLAYING 或 PAUSED，调用 `stop()`
 - **THEN** state 变为 STOPPED，currentTick=0
 
-#### Scenario: Stop with keep behavior preserves cursor position
+#### Scenario: Stop with return behavior goes back to last start position
 
-- **WHEN** stopBehavior='keep', currentTick=1920，调用 `stop()`
-- **THEN** state 变为 STOPPED，currentTick=1920
+- **WHEN** stopBehavior='return', lastStartTick=1920, state=PLAYING，调用 `stop()`
+- **THEN** state 变为 STOPPED，currentTick=1920（回到上次 play/seek 的位置，而非当前播放位置）
 
 #### Scenario: Seek while stopped
 
@@ -167,3 +168,39 @@ Scheduler SHALL 提供 `resetScheduleWindow()` 方法，将 `lastScheduledTime` 
 
 - **WHEN** autoFollow=false，用户调用 `stop()` 后调用 `play()`
 - **THEN** autoFollow 变为 true
+
+### Requirement: TransportBar playback mode toggles
+
+TransportBar SHALL 在 SkipForward 按钮右侧渲染三个播放模式 toggle 按钮（Loop、Auto-Follow、Stop Behavior），与传输操作按钮通过 18px 间距形成视觉分组。
+
+三个 toggle 按钮 SHALL 使用 Phosphor Duotone 图标集，遵循 Merengue 暗色主题胶囊样式：28px × 28px，border-radius 8px，基础态 `--surface2` 底 + `--text3` 图标色；激活态 `--accent` 20% 透明度底 + `--accent` 图标色；hover 态 `--surface3` 底 + `--text1` 图标色。过渡动画 SHALL 使用 spring easing（`all 0.15s ease`）。
+
+#### Scenario: Loop toggle switches endBehavior
+
+- **WHEN** endBehavior='stop'，用户点击 Loop 按钮
+- **THEN** endBehavior 变为 'loop'，按钮变为 coral 激活态；再次点击则切回 'stop'，按钮变回灰色
+
+#### Scenario: Auto-follow toggle switches autoFollow
+
+- **WHEN** autoFollow=true，用户点击 Auto-Follow 按钮
+- **THEN** autoFollow 变为 false，按钮变为灰色；再次点击则恢复 true 和 coral 激活态
+
+#### Scenario: Auto-follow button reflects manual scroll disable
+
+- **WHEN** autoFollow=true（按钮 coral），用户手动滚动滚轮导致 autoFollow 变为 false
+- **THEN** Auto-Follow 按钮 UI 同步变为灰色非激活态
+
+#### Scenario: Stop behavior dropdown shows two options
+
+- **WHEN** 用户点击 Stop Behavior（齿轮）按钮
+- **THEN** 弹出面板显示 Reset（回到开头）和 Return（回到上次播放起点）两个选项，当前选中项左侧显示 coral checkmark
+
+#### Scenario: Stop behavior dropdown selects return
+
+- **WHEN** stopBehavior='reset'，用户打开下拉并点击 Return
+- **THEN** stopBehavior 变为 'return'，面板关闭；后续 stop 操作光标回到 `lastStartTick` 而非 tick 0
+
+#### Scenario: Stop behavior dropdown dismisses on outside click
+
+- **WHEN** Stop Behavior 下拉面板打开，用户点击面板外任意位置
+- **THEN** 面板关闭，stopBehavior 不变

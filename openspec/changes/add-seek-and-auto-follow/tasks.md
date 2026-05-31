@@ -1,7 +1,7 @@
 ## 1. Foundation — Store & Interface 变更
 
 - [ ] 1.1 `SoundSource` 接口新增 `stopAll(when: number): void`，`OscillatorBank` 已有实现无需改动
-- [ ] 1.2 `TransportSlice` 新增 `seekTo(tick: number)` action、`stopBehavior` / `endBehavior` / `autoFollow` 字段 + setter
+- [ ] 1.2 `TransportSlice` 新增 `seekTo(tick: number)` action、`lastStartTick`、`stopBehavior` (`'reset'`\|`'return'`) / `endBehavior` / `autoFollow` 字段 + setter
 - [ ] 1.3 `EditorSlice.viewport` 新增 `rulerHeight: number`（默认 32px）
 
 ## 2. Transport & Scheduler 增强
@@ -14,7 +14,7 @@
 ## 3. Playback Manager 编排
 
 - [ ] 3.1 `playbackManager.seekTo(tick)`: 编排 oscBank.stopAll() → transport.seekTo() → scheduler.resetScheduleWindow() → store.currentTick 更新
-- [ ] 3.2 `playbackManager.stop()` 根据 `stopBehavior` 参数调用 oscBank.stopAll() 并保留或不保留 currentTick
+- [ ] 3.2 `playbackManager.stop()` 根据 `stopBehavior` 调用 oscBank.stopAll()。`reset` 模式 currentTick=0；`return` 模式 currentTick=lastStartTick
 - [ ] 3.3 `playbackManager` 暴露 `seekTo` 给外部调用
 
 ## 4. Ruler 标尺渲染
@@ -41,9 +41,15 @@
 - [ ] 6.3 stop→play 过渡时恢复 autoFollow=true
 - [ ] 6.4 playing 状态下 scrollX 变化时，grid + note 层在当前帧直接重绘（不依赖 dirty 标记机制），保证跟随画面流畅
 
-## 7. 测试
+## 7. TransportBar 播放模式 Toggle
 
-- [ ] 7.1 `transport.test.ts` 新增 seekTo 测试（stopped / paused / playing 三种状态）
-- [ ] 7.2 `scheduler.test.ts` 新增 resetScheduleWindow 测试、endBehavior 测试
-- [ ] 7.3 `ruler-renderer` 单元测试：密度自适应逻辑（不同 zoomX 下的显示层级）
-- [ ] 7.4 `cursor-auto-follow` 单元测试：targetScrollX 计算、clamp 边界、缓动公式
+- [ ] 7.1 Loop toggle 按钮：点击切换 `endBehavior` (`stop` ↔ `loop`)，激活态 coral 高亮
+- [ ] 7.2 Auto-Follow toggle 按钮：点击切换 `autoFollow`，激活态 coral 高亮；`autoFollow` 被手动滚动关闭时同步变灰
+- [ ] 7.3 Stop Behavior 下拉：齿轮按钮 + 弹出面板 (`Reset` / `Return`)，选中项 checkmark，点击外部关闭
+
+## 8. 测试
+
+- [ ] 8.1 `transport.test.ts` 新增 seekTo 测试（stopped / paused / playing 三种状态）
+- [ ] 8.2 `scheduler.test.ts` 新增 resetScheduleWindow 测试、endBehavior 测试
+- [ ] 8.3 `ruler-renderer` 单元测试：密度自适应逻辑（不同 zoomX 下的显示层级）
+- [ ] 8.4 `cursor-auto-follow` 单元测试：targetScrollX 计算、clamp 边界、缓动公式
