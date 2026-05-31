@@ -1,7 +1,7 @@
 ## 1. Foundation — Store & Interface 变更
 
 - [ ] 1.1 `SoundSource` 接口新增 `stopAll(when: number): void`，`OscillatorBank` 已有实现无需改动
-- [ ] 1.2 `TransportSlice` 新增 `seekTo(tick: number)` action、`lastStartTick`、`stopBehavior` (`'reset'`\|`'return'`) / `endBehavior` / `autoFollow` 字段 + setter
+- [ ] 1.2 `TransportSlice` 新增 `seekTo(tick: number)` action、`lastStartTick`、`pauseBehavior` (`'keep'`\|`'return'`) / `endBehavior` / `autoFollow` 字段 + setter
 - [ ] 1.3 `EditorSlice.viewport` 新增 `rulerHeight: number`（默认 32px）
 
 ## 2. Transport & Scheduler 增强
@@ -14,7 +14,7 @@
 ## 3. Playback Manager 编排
 
 - [ ] 3.1 `playbackManager.seekTo(tick)`: 编排 oscBank.stopAll() → transport.seekTo() → scheduler.resetScheduleWindow() → store.currentTick 更新
-- [ ] 3.2 `playbackManager.stop()` 根据 `stopBehavior` 调用 oscBank.stopAll()。`reset` 模式 currentTick=0；`return` 模式 currentTick=lastStartTick
+- [ ] 3.2 `playbackManager.stop()` 调用 oscBank.stopAll() 并设 currentTick=0；`playbackManager.pause()` 根据 `pauseBehavior` 设 currentTick (`keep` 保留 / `return` 跳回 lastStartTick)
 - [ ] 3.3 `playbackManager` 暴露 `seekTo` 给外部调用
 
 ## 4. Ruler 标尺渲染
@@ -45,7 +45,7 @@
 
 - [ ] 7.1 Loop toggle 按钮：点击切换 `endBehavior` (`stop` ↔ `loop`)，激活态 coral 高亮
 - [ ] 7.2 Auto-Follow toggle 按钮：点击切换 `autoFollow`，激活态 coral 高亮；`autoFollow` 被手动滚动关闭时同步变灰
-- [ ] 7.3 Stop Behavior 下拉：齿轮按钮 + 弹出面板 (`Reset` / `Return`)，选中项 checkmark，点击外部关闭
+- [ ] 7.3 Pause Behavior 下拉：齿轮按钮 + 弹出面板 (`Keep` / `Return`)，选中项 checkmark，点击外部关闭
 
 ## 8. 测试
 

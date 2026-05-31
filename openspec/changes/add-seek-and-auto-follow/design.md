@@ -11,7 +11,7 @@
 - 实现 seek-to-tick 能力（播放中 seek 静音 + 重置调度窗口）
 - 实现播放时光标平滑自动跟随，手动滚动后暂停跟随
 - `SoundSource` 接口新增 `stopAll(when)`，供 seek/stop 静音
-- 提供 `stopBehavior`（reset/keep）和 `endBehavior`（stop/loop）播放选项
+- 提供 `pauseBehavior`（keep/return）和 `endBehavior`（stop/loop）播放选项
 
 **Non-Goals:**
 - 横向布局下的标尺（当前仅 vertical orientation）
@@ -95,16 +95,18 @@ seekTo(tick):
 - `Transport.seekTo(tick)`: 如果 playing，设 `startTime = audioCtx.currentTime, startTick = tick`；如果 paused/stopped，直接设 `currentTick = tick`
 - `Scheduler.resetScheduleWindow()`: 设 `lastScheduledTime = audioCtx.currentTime`，确保下一个调度窗口覆盖新位置后的音符
 
-### D6: Stop 行为可配置
+### D6: Pause 行为可配置
 
-**选择**：`transport-slice.ts` 新增 `stopBehavior: 'reset' | 'return'` 字段。
+**选择**：`transport-slice.ts` 新增 `pauseBehavior: 'keep' | 'return'` 字段。
 
-- `reset`（默认）：stop 时 `currentTick = 0`（绝对开头，向后兼容）
-- `return`：stop 时 `currentTick` 回到上次开始播放的位置（`lastStartTick`），即最近一次 `play()` 或 `seekTo()` 设置 `startTick` 时的值。不同于 pause 保留当前进度——return 是反向跳回起点，方便反复试听同一段落
+- `keep`（默认）：pause 时 `currentTick` 保留在当前播放位置（当前行为，向后兼容）
+- `return`：pause 时 `currentTick` 回到上次开始播放的位置（`lastStartTick`），即最近一次 `play()` 或 `seekTo()` 设置 `startTick` 时的值。方便反复试听同一段落
 
-Transport slice 新增 `lastStartTick` 字段，在 `play()` 和 `seekTo()` 时更新，在 `stop()` (return 模式) 时用作目标位置。
+Transport slice 新增 `lastStartTick` 字段，在 `play()` 和 `seekTo()` 时更新，在 `pause()` (return 模式) 时用作目标位置。
 
-**场景**：用户 seek 到 bar 16 → play → 播放到 bar 20 → stop（return 模式）→ 光标回到 bar 16。再次按 play → 从 bar 16 重新开始。等效于"循环试听同一段但没有显式 loop"。
+**场景**：用户 seek 到 bar 16 → play → 播放到 bar 20 → pause（return 模式）→ 光标跳回 bar 16。解除 pause 后从 bar 16 继续播放。等效于"暂停并回到段落起点重听"。
+
+`stop()` 行为保持简单：永远回到 tick 0，不提供配置选项。
 
 `endBehavior: 'stop' | 'loop'` 字段：
 - `stop`：播放超过最后一个音符的 endTick 时自动调用 `stop()`
@@ -131,7 +133,7 @@ Scrubbing 中连续调用 `playbackManager.seekTo(tick)`。如果正在播放，
 
 ### D9: TransportBar 播放选项 Toggle UI
 
-**选择**：在 `TransportBar` 中 SkipForward 按钮右侧新增三个 toggle 按钮，控制 `endBehavior`、`autoFollow`、`stopBehavior`。所有按钮使用 Phosphor Duotone 图标，Merengue 暗色主题胶囊样式。
+**选择**：在 `TransportBar` 中 SkipForward 按钮右侧新增三个 toggle 按钮，控制 `endBehavior`、`autoFollow`、`pauseBehavior`。所有按钮使用 Phosphor Duotone 图标，Merengue 暗色主题胶囊样式。
 
 **按钮布局**：
 
@@ -148,7 +150,7 @@ Scrubbing 中连续调用 `playbackManager.seekTo(tick)`。如果正在播放，
 |------|---------|------|--------|------|
 | **Loop** | `endBehavior` | `ph-repeat` | coral 高亮 = loop 模式，灰色 = stop 模式 | 关闭（灰色） |
 | **Auto-Follow** | `autoFollow` | `ph-eye` | coral 高亮 = 跟随开启，灰色 = 跟随暂停 | 开启（coral） |
-| **Stop Behavior** | `stopBehavior` | `ph-gear` | 点击弹出小下拉：`Reset`（回到开头）/ `Return`（回到起始位置），当前选项 checkmark | reset |
+| **Pause Behavior** | `pauseBehavior` | `ph-gear` | 点击弹出小下拉：`Keep`（停在当前位置）/ `Return`（回到播放起点），当前选项 checkmark | keep |
 
 **样式规格**（Merengue 主题）：
 
@@ -174,7 +176,7 @@ toggle 按钮（hover）：
 
 **Auto-Follow 自动关闭联动**：当用户手动滚动导致 `autoFollow` 变为 `false` 时，按钮 UI 同步回到非激活态（灰色）。用户可点击按钮重新开启。
 
-**Stop Behavior 下拉**：使用小弹出面板（`position: absolute` 在按钮上方），两个选项 `Reset`（回到开头）/ `Return`（回到上次播放起点）（Nunito Sans 12px, `--text2`），当前选中项左侧显示 checkmark（`ph-check`, `--accent`）。点击选项后立即应用并关闭弹出。点击面板外区域关闭。
+**Pause Behavior 下拉**：使用小弹出面板（`position: absolute` 在按钮上方），两个选项 `Keep`（停在当前位置）/ `Return`（回到上次播放起点）（Nunito Sans 12px, `--text2`），当前选中项左侧显示 checkmark（`ph-check`, `--accent`）。点击选项后立即应用并关闭弹出。点击面板外区域关闭。
 
 **替代方案**：将选项放在全局设置面板而非 TransportBar。
 - 拒绝理由：Loop 和 Auto-Follow 是高频操作，需要即时可见和 toggle。Stop behavior 使用频率低，但和 Stop 按钮放在同区域符合操作半径。传输操作与播放模式通过间距自然分组，不干扰肌肉记忆。

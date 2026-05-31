@@ -8,7 +8,7 @@
 - **新增 Seek 能力**：Transport 增加 `seekTo(tick)` 方法，播放中 seek 时静音当前音符并重置调度窗口
 - **新增 Auto-Follow**：播放时光标平滑跟随，视口自动滚动保持光标可见；用户手动滚动后暂停跟随
 - **新增 `stopAll` 到 SoundSource 接口**：seek 和 stop 时需要立即静音所有发声中的振荡器
-- **新增播放选项**：`stopBehavior`（stop 后回到开头 vs 留在最后位置）、`endBehavior`（播放到项目末尾停止 vs 循环）
+- **新增播放选项**：`pauseBehavior`（暂停时保留当前位置 vs 回到播放起点）、`endBehavior`（播放到项目末尾停止 vs 循环）
 - **标尺对齐布局**：通过 DOM flex 网格布局实现标尺与 Piano Roll 的精确对齐——标尺上方留出与键盘等宽的 corner spacer，确保标尺刻度线对齐 Piano Roll 网格线
 
 ## Capabilities
@@ -20,13 +20,13 @@
 
 ### Modified Capabilities
 
-- `playback-engine`: Transport 新增 `seekTo(tick)` 方法；SoundSource 接口新增 `stopAll(when)`；Scheduler 新增 `resetScheduleWindow()`；新增 `stopBehavior` 与 `endBehavior` 播放选项；Transport state machine 的 stop 行为改为可配置
+- `playback-engine`: Transport 新增 `seekTo(tick)` 方法；SoundSource 接口新增 `stopAll(when)`；Scheduler 新增 `resetScheduleWindow()`；新增 `pauseBehavior` 与 `endBehavior` 播放选项；Transport 状态机 `pause()` 行为改为可配置
 - `piano-roll-renderer`: Viewport 新增 `rulerHeight` 配置项；App 布局从单行 flex 改为 2×2 网格（corner + ruler / keyboard + piano roll）
 
 ## Impact
 
-- **State 层**: `transport-slice.ts` 新增 `seekTo`、`stopBehavior`、`endBehavior`；`editor-slice.ts` 新增 `rulerHeight`
-- **Engine 层**: `transport.ts` 新增 `seekTo()`；`scheduler.ts` 新增 `resetScheduleWindow()`；`playback-manager.ts` 新增 `seekTo()`、修改 `stop()` 行为
+- **State 层**: `transport-slice.ts` 新增 `seekTo`、`lastStartTick`、`pauseBehavior`、`endBehavior`、`autoFollow`；`editor-slice.ts` 新增 `rulerHeight`
+- **Engine 层**: `transport.ts` 新增 `seekTo()`；`scheduler.ts` 新增 `resetScheduleWindow()`；`playback-manager.ts` 新增 `seekTo()`、修改 `pause()` 行为
 - **Audio 层**: `sound-source.ts` 接口新增 `stopAll(when: number)`
 - **Renderer 层**: 新增 `ruler-renderer.ts`（RulerRenderer 类，含渲染 + 事件处理）；`cursor-renderer.ts` 的光标三角指示器在标尺中复用
 - **Components 层**: 新增 `RulerView.tsx`；修改 `App.tsx` 布局为 2×2 网格

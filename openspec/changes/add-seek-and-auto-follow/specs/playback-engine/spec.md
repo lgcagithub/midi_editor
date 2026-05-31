@@ -4,15 +4,15 @@
 
 系统 SHALL 维护一个三态 Transport 状态机：
 
-- **STOPPED**：播放停止，cursor 位置由 `stopBehavior` 决定
+- **STOPPED**：播放停止，cursor 归零
 - **PLAYING**：播放进行中，cursor 随时间前进
-- **PAUSED**：播放暂停，cursor 保持在当前位置
+- **PAUSED**：播放暂停，cursor 行为由 `pauseBehavior` 决定
 
 状态转换：
 
-- `play()`: STOPPED → PLAYING (cursor 从 0 开始) 或 PAUSED → PLAYING (cursor 从暂停位置继续)
-- `pause()`: PLAYING → PAUSED
-- `stop()`: PLAYING → STOPPED 或 PAUSED → STOPPED。cursor 行为由 `stopBehavior` 选项决定：`'reset'` 时 cursor 归零，`'keep'` 时 cursor 保留在当前位置
+- `play()`: STOPPED → PLAYING (cursor 从 0 开始) 或 PAUSED → PLAYING (cursor 从 `lastStartTick` 或当前位置继续)
+- `pause()`: PLAYING → PAUSED。cursor 行为由 `pauseBehavior` 决定：`'keep'` 时停在当前位置（默认），`'return'` 时跳回 `lastStartTick`
+- `stop()`: PLAYING → STOPPED 或 PAUSED → STOPPED。cursor 永远归零
 - `seekTo(tick)`: 任意状态均可调用——PLAYING 时重置 `startTime=audioCtx.currentTime, startTick=tick` 并继续播放；PAUSED/STOPPED 时直接设 `currentTick=tick`
 
 Transport 状态 SHALL 包含以下字段：
@@ -21,8 +21,8 @@ Transport 状态 SHALL 包含以下字段：
 - `currentTick`: number — 当前播放位置
 - `startTime`: number — 本次 play 开始的 `AudioContext.currentTime`
 - `startTick`: number — 本次 play 开始时的 cursor tick
-- `lastStartTick`: number — 最近一次 `play()` 或 `seekTo()` 设置 `startTick` 时的值，用于 `stopBehavior='return'`
-- `stopBehavior`: `'reset'` | `'return'` — stop 后的 cursor 行为（默认 `'reset'`）。`reset` 回到 tick 0；`return` 回到 `lastStartTick`，即上次开始播放或 seek 的位置
+- `lastStartTick`: number — 最近一次 `play()` 或 `seekTo()` 设置 `startTick` 时的值，用于 `pauseBehavior='return'`
+- `pauseBehavior`: `'keep'` | `'return'` — pause 后的 cursor 行为（默认 `'keep'`）。`keep` 停在当前位置；`return` 回到 `lastStartTick`，即上次开始播放或 seek 的位置
 - `endBehavior`: `'stop'` | `'loop'` — 播放到项目末尾的行为（默认 `'stop'`）
 - `autoFollow`: boolean — 播放时是否自动跟随光标（默认 `true`）
 
@@ -36,20 +36,20 @@ Transport 状态 SHALL 包含以下字段：
 - **WHEN** state=PAUSED，currentTick=960，调用 `play()`
 - **THEN** state 变为 PLAYING，startTick=960，startTime=audioCtx.currentTime
 
-#### Scenario: Pause from playing
+#### Scenario: Pause from playing keeps current position (default)
 
-- **WHEN** state=PLAYING，调用 `pause()`
-- **THEN** state 变为 PAUSED，currentTick 保持在暂停时刻的位置
+- **WHEN** pauseBehavior='keep', state=PLAYING, currentTick=960，调用 `pause()`
+- **THEN** state 变为 PAUSED，currentTick 保持在 960
 
-#### Scenario: Stop with reset behavior resets cursor to 0
+#### Scenario: Pause from playing returns to last start position
 
-- **WHEN** stopBehavior='reset'，state=PLAYING 或 PAUSED，调用 `stop()`
+- **WHEN** pauseBehavior='return', lastStartTick=480, state=PLAYING, currentTick=960，调用 `pause()`
+- **THEN** state 变为 PAUSED，currentTick=480（跳回上次 play/seek 的起点）
+
+#### Scenario: Stop always resets cursor to 0
+
+- **WHEN** state=PLAYING 或 PAUSED，调用 `stop()`
 - **THEN** state 变为 STOPPED，currentTick=0
-
-#### Scenario: Stop with return behavior goes back to last start position
-
-- **WHEN** stopBehavior='return', lastStartTick=1920, state=PLAYING，调用 `stop()`
-- **THEN** state 变为 STOPPED，currentTick=1920（回到上次 play/seek 的位置，而非当前播放位置）
 
 #### Scenario: Seek while stopped
 
@@ -171,7 +171,7 @@ Scheduler SHALL 提供 `resetScheduleWindow()` 方法，将 `lastScheduledTime` 
 
 ### Requirement: TransportBar playback mode toggles
 
-TransportBar SHALL 在 SkipForward 按钮右侧渲染三个播放模式 toggle 按钮（Loop、Auto-Follow、Stop Behavior），与传输操作按钮通过 18px 间距形成视觉分组。
+TransportBar SHALL 在 SkipForward 按钮右侧渲染三个播放模式 toggle 按钮（Loop、Auto-Follow、Pause Behavior），与传输操作按钮通过 18px 间距形成视觉分组。
 
 三个 toggle 按钮 SHALL 使用 Phosphor Duotone 图标集，遵循 Merengue 暗色主题胶囊样式：28px × 28px，border-radius 8px，基础态 `--surface2` 底 + `--text3` 图标色；激活态 `--accent` 20% 透明度底 + `--accent` 图标色；hover 态 `--surface3` 底 + `--text1` 图标色。过渡动画 SHALL 使用 spring easing（`all 0.15s ease`）。
 
@@ -190,17 +190,17 @@ TransportBar SHALL 在 SkipForward 按钮右侧渲染三个播放模式 toggle �
 - **WHEN** autoFollow=true（按钮 coral），用户手动滚动滚轮导致 autoFollow 变为 false
 - **THEN** Auto-Follow 按钮 UI 同步变为灰色非激活态
 
-#### Scenario: Stop behavior dropdown shows two options
+#### Scenario: Pause behavior dropdown shows two options
 
-- **WHEN** 用户点击 Stop Behavior（齿轮）按钮
-- **THEN** 弹出面板显示 Reset（回到开头）和 Return（回到上次播放起点）两个选项，当前选中项左侧显示 coral checkmark
+- **WHEN** 用户点击 Pause Behavior（齿轮）按钮
+- **THEN** 弹出面板显示 Keep（停在当前位置）和 Return（回到上次播放起点）两个选项，当前选中项左侧显示 coral checkmark
 
-#### Scenario: Stop behavior dropdown selects return
+#### Scenario: Pause behavior dropdown selects return
 
-- **WHEN** stopBehavior='reset'，用户打开下拉并点击 Return
-- **THEN** stopBehavior 变为 'return'，面板关闭；后续 stop 操作光标回到 `lastStartTick` 而非 tick 0
+- **WHEN** pauseBehavior='keep'，用户打开下拉并点击 Return
+- **THEN** pauseBehavior 变为 'return'，面板关闭
 
-#### Scenario: Stop behavior dropdown dismisses on outside click
+#### Scenario: Pause behavior dropdown dismisses on outside click
 
-- **WHEN** Stop Behavior 下拉面板打开，用户点击面板外任意位置
-- **THEN** 面板关闭，stopBehavior 不变
+- **WHEN** Pause Behavior 下拉面板打开，用户点击面板外任意位置
+- **THEN** 面板关闭，pauseBehavior 不变
