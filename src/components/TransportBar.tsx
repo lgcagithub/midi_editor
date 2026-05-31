@@ -126,7 +126,23 @@ const dropdownPanelStyle: React.CSSProperties = {
   borderRadius: 8,
   padding: '4px 0',
   zIndex: 100,
-  minWidth: 160,
+  minWidth: 220,
+}
+
+const dropdownItemBase: React.CSSProperties = {
+  padding: '8px 12px',
+  cursor: 'pointer',
+  color: 'var(--text1, #FAF9F8)',
+  fontSize: 13,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  whiteSpace: 'nowrap',
+}
+
+const dropdownItemSelected: React.CSSProperties = {
+  ...dropdownItemBase,
+  background: 'rgba(255, 92, 114, 0.12)',
 }
 
 // ============================================================
@@ -352,43 +368,35 @@ export default function TransportBar(): JSX.Element {
         {dropdownOpen && (
           <div style={dropdownPanelStyle}>
             <div
-              style={{
-                padding: '8px 12px',
-                cursor: 'pointer',
-                color: 'var(--text1, #FAF9F8)',
-                fontSize: 13,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
+              style={pauseBehavior === 'keep' ? dropdownItemSelected : dropdownItemBase}
               onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--surface3, #423B38)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = pauseBehavior === 'keep'
+                  ? 'rgba(255, 92, 114, 0.12)'
+                  : 'transparent'
+              }}
               onClick={() => { setPauseBehavior('keep'); setDropdownOpen(false) }}
             >
               {pauseBehavior === 'keep' && (
-                <i className="ph ph-check" style={{ color: 'var(--accent, #FF5C72)' }} />
+                <i className="ph-bold ph-check" style={{ color: 'var(--accent, #FF5C72)', fontSize: 14 }} />
               )}
-              {pauseBehavior !== 'keep' && <span style={{ width: 16 }} />}
+              {pauseBehavior !== 'keep' && <span style={{ width: 18 }} />}
               Keep（停在当前位置）
             </div>
             <div
-              style={{
-                padding: '8px 12px',
-                cursor: 'pointer',
-                color: 'var(--text1, #FAF9F8)',
-                fontSize: 13,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
+              style={pauseBehavior === 'return' ? dropdownItemSelected : dropdownItemBase}
               onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--surface3, #423B38)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = pauseBehavior === 'return'
+                  ? 'rgba(255, 92, 114, 0.12)'
+                  : 'transparent'
+              }}
               onClick={() => { setPauseBehavior('return'); setDropdownOpen(false) }}
             >
               {pauseBehavior === 'return' && (
-                <i className="ph ph-check" style={{ color: 'var(--accent, #FF5C72)' }} />
+                <i className="ph-bold ph-check" style={{ color: 'var(--accent, #FF5C72)', fontSize: 14 }} />
               )}
-              {pauseBehavior !== 'return' && <span style={{ width: 16 }} />}
+              {pauseBehavior !== 'return' && <span style={{ width: 18 }} />}
               Return（回到播放起点）
             </div>
           </div>
