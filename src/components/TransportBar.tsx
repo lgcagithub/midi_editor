@@ -294,8 +294,15 @@ export default function TransportBar(): JSX.Element {
           e.currentTarget.style.color = 'var(--text1, #FAF9F8)'
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = ''
-          e.currentTarget.style.color = ''
+          if (endBehavior === 'loop') {
+            e.currentTarget.style.background = 'rgba(255, 92, 114, 0.2)'
+            e.currentTarget.style.color = 'var(--accent, #FF5C72)'
+            e.currentTarget.style.borderColor = 'var(--accent, #FF5C72)'
+          } else {
+            e.currentTarget.style.background = 'var(--surface2, #2E2927)'
+            e.currentTarget.style.color = 'var(--text3, #7A6E68)'
+            e.currentTarget.style.borderColor = 'var(--border-visible, #423B38)'
+          }
         }}
       >
         <i className="ph-duotone ph-repeat" />
@@ -311,8 +318,15 @@ export default function TransportBar(): JSX.Element {
           e.currentTarget.style.color = 'var(--text1, #FAF9F8)'
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = ''
-          e.currentTarget.style.color = ''
+          if (autoFollow) {
+            e.currentTarget.style.background = 'rgba(255, 92, 114, 0.2)'
+            e.currentTarget.style.color = 'var(--accent, #FF5C72)'
+            e.currentTarget.style.borderColor = 'var(--accent, #FF5C72)'
+          } else {
+            e.currentTarget.style.background = 'var(--surface2, #2E2927)'
+            e.currentTarget.style.color = 'var(--text3, #7A6E68)'
+            e.currentTarget.style.borderColor = 'var(--border-visible, #423B38)'
+          }
         }}
       >
         <i className="ph-duotone ph-eye" />
