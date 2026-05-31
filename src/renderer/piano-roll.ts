@@ -314,6 +314,10 @@ export class PianoRollOrchestrator {
     }
 
     // 检测是否需要更新 mapper
+    // 保存旧值：updateMapper 会更新 prevZoomX/prevOrientation，
+    // 但脏标记检查需要用旧值判断 zoomX 是否真的变化了
+    const oldZoomX = this.prevZoomX
+    const oldOrientation = this.prevOrientation
     if (
       state.orientation !== this.prevOrientation ||
       vp.zoomX !== this.prevZoomX ||
@@ -326,8 +330,8 @@ export class PianoRollOrchestrator {
     if (
       vp.scrollX !== this.prevScrollX ||
       vp.scrollY !== this.prevScrollY ||
-      state.orientation !== this.prevOrientation ||
-      vp.zoomX !== this.prevZoomX
+      state.orientation !== oldOrientation ||
+      vp.zoomX !== oldZoomX
     ) {
       this.dirtyGrid = true
       this.dirtyNotes = true
