@@ -127,7 +127,7 @@ export default function App(): JSX.Element {
         {/* Col 2：标尺 + 钢琴卷帘 */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
           <RulerView />
-          <div style={{ flex: 1, overflow: 'hidden' }}>
+          <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <PianoRollView />
           </div>
         </div>
