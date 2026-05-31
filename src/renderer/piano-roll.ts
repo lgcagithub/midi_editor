@@ -407,9 +407,10 @@ export class PianoRollOrchestrator {
       }
     }
 
-    // 光标（每次 rAF 都重新计算，但只在变化时重绘）
+    // 光标（tick 变化或 scroll 变化或播放中都需要重绘）
     const tick = computeCurrentTick(state)
-    if (Math.abs(tick - this.lastCursorTick) > 0.5 || state.transportState === 'playing') {
+    const scrollChanged = state.viewport.scrollX !== this.prevScrollX
+    if (Math.abs(tick - this.lastCursorTick) > 0.5 || scrollChanged || state.transportState === 'playing') {
       this.renderCursorLayer(state, tick)
       this.lastCursorTick = tick
     }
