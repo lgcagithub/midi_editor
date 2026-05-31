@@ -122,13 +122,16 @@ export class Scheduler {
       const maxEndTick = computeMaxEndTick(state.tracks)
       if (maxEndTick > 0 && currentTick >= maxEndTick) {
         if (state.endBehavior === 'stop') {
+          // 调用 playbackManager.stop() 会同时静音 + 停止 transport
           this.store.getState().stop()
+          // 静音所有正在发声的音符
+          this.soundSource.stopAll(this.audioCtx.currentTime)
         } else {
-          // loop: seek to 0
-          this.store.getState().seekTo(0)
+          // loop: 通过 transport.seekTo(0) 确保 startTime 使用 audioCtx 时钟
+          this.transport.seekTo(0)
           this.lastScheduledTime = this.audioCtx.currentTime
         }
-        return // 跳过本次调度的音符触发
+        return
       }
     }
   }
