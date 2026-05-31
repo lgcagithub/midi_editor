@@ -8,6 +8,7 @@
 import type { StoreApi, UseBoundStore } from 'zustand'
 import type { StoreState } from '@/state/store'
 import type { TransportState } from '@/state/transport-slice'
+import type { TempoEvent } from '@/types'
 import { createCoordinateMapper, type CoordinateMapper, type Orientation } from './coordinate-mapper'
 import { renderGrid } from './grid-renderer'
 import { renderNotes } from './note-renderer'
@@ -113,6 +114,10 @@ export class PianoRollOrchestrator {
   private prevTool: string = 'pointer'
   /** 上一个传输状态（用于检测 stopped→playing 切换） */
   private prevTransportState: TransportState = 'stopped'
+  /** 上一次 mapper 重建时的 ppq，用于检测 MIDI 文件加载后的变化 */
+  private prevPpq = 0
+  /** 上一次 mapper 重建时的 tempoMap 引用 */
+  private prevTempoMap: TempoEvent[] = []
 
   // --- Canvas 尺寸 ---
   private canvasWidth = 0
@@ -297,6 +302,8 @@ export class PianoRollOrchestrator {
     this.prevOrientation = state.orientation
     this.prevZoomX = state.viewport.zoomX
     this.prevZoomY = state.viewport.zoomY
+    this.prevPpq = state.ppq
+    this.prevTempoMap = state.tempoMap
   }
 
   // ============================================================
@@ -315,7 +322,7 @@ export class PianoRollOrchestrator {
       state.setAutoFollow(true)
     }
 
-    // 检测是否需要更新 mapper
+    // 检测是否需要更新 mapper（zoomX/orientation/ppq/tempoMap 任一变化）
     // 保存旧值：updateMapper 会更新 prevZoomX/prevOrientation，
     // 但脏标记检查需要用旧值判断 zoomX 是否真的变化了
     const oldZoomX = this.prevZoomX
@@ -323,7 +330,9 @@ export class PianoRollOrchestrator {
     if (
       state.orientation !== this.prevOrientation ||
       vp.zoomX !== this.prevZoomX ||
-      vp.zoomY !== this.prevZoomY
+      vp.zoomY !== this.prevZoomY ||
+      state.ppq !== this.prevPpq ||
+      state.tempoMap !== this.prevTempoMap
     ) {
       this.updateMapper()
     }

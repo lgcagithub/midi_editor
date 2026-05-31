@@ -60,6 +60,7 @@ export default function RulerView(): JSX.Element {
       mapper,
       getTempoMap: () => useStore.getState().tempoMap,
       getPpq: () => useStore.getState().ppq,
+      getTimeSigs: () => useStore.getState().timeSigs,
     })
     rendererRef.current = renderer
     renderer.render()

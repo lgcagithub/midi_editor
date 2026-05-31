@@ -10,7 +10,7 @@
  */
 
 import type { CoordinateMapper } from './coordinate-mapper'
-import type { TempoEvent } from '@/types'
+import type { TempoEvent, TimeSigEvent } from '@/types'
 import { DEFAULT_BPM } from '@/constants'
 import { seekTo } from '@/engine/playback-manager'
 
@@ -99,11 +99,14 @@ interface TimeSigInfo {
   denominator: number
 }
 
-function getTimeSigAt(_tick: number, _tempoMap: TempoEvent[]): TimeSigInfo {
-  // 标尺层目前只使用速度映射，拍号默认 4/4
-  // 若将来需要获取拍号，可从 store.timeSigs 传入
-  // 简化处理：暂不使用 timeSigs
-  return { numerator: 4, denominator: 4 }
+function getTimeSigAt(tick: number, timeSigs: TimeSigEvent[]): TimeSigInfo {
+  if (timeSigs.length === 0) return { numerator: 4, denominator: 4 }
+  let current = timeSigs[0]!
+  for (const ts of timeSigs) {
+    if (ts.tick <= tick) current = ts
+    else break
+  }
+  return { numerator: current.numerator, denominator: current.denominator }
 }
 
 // ============================================================
@@ -135,6 +138,7 @@ export class RulerRenderer {
   private currentTick: number = 0
   private getTempoMap: () => TempoEvent[]
   private getPpq: () => number
+  private getTimeSigs: () => TimeSigEvent[]
 
   /** DPR 缓存 */
   private dpr: number = 1
@@ -153,6 +157,7 @@ export class RulerRenderer {
       mapper: CoordinateMapper
       getTempoMap: () => TempoEvent[]
       getPpq: () => number
+      getTimeSigs: () => TimeSigEvent[]
     },
   ) {
     this.canvas = canvas
@@ -164,6 +169,7 @@ export class RulerRenderer {
     this.mapper = options.mapper
     this.getTempoMap = options.getTempoMap
     this.getPpq = options.getPpq
+    this.getTimeSigs = options.getTimeSigs
 
     this.dpr = window.devicePixelRatio || 1
 
@@ -236,9 +242,10 @@ export class RulerRenderer {
   // ============================================================
 
   private drawTicks(width: number, height: number): void {
-    const { ctx, mapper, scrollX, getTempoMap, getPpq } = this
+    const { ctx, mapper, scrollX, getTempoMap, getPpq, getTimeSigs } = this
     const tempoMap = getTempoMap()
     const ppq = getPpq()
+    const timeSigs = getTimeSigs()
 
     // 计算可见 tick 范围
     const leftTick = mapper.pixelToTick(Math.max(0, scrollX))
@@ -252,7 +259,7 @@ export class RulerRenderer {
     const pixelsPerBeat = (mapper.pixelsPerSecond * 60) / bpm
 
     // 获取当前拍号（默认 4/4）
-    const ts = getTimeSigAt(leftTick, tempoMap)
+    const ts = getTimeSigAt(leftTick, timeSigs)
     const beatTicks = (ppq * 4) / ts.denominator // 每拍 tick 数
     const measureTicks = beatTicks * ts.numerator // 每小节 tick 数
 
