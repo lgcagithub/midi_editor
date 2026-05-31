@@ -93,8 +93,8 @@ function createTestStore(overrides?: Partial<StoreState>) {
       set((s) => ({
         transportState: 'playing',
         startTime: performance.now(),
-        startTick: s.transportState === 'paused' ? s.currentTick : 0,
-        lastStartTick: s.transportState === 'paused' ? s.currentTick : 0,
+        startTick: s.currentTick,
+        lastStartTick: s.currentTick,
       })),
     pause: () => set({ transportState: 'paused' }),
     stop: () => set({ transportState: 'stopped', currentTick: 0 }),
