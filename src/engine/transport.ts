@@ -22,11 +22,11 @@ export class Transport {
     this.store = store
   }
 
-  /** 开始/继续播放 */
+  /** 开始/继续播放 —— 始终从 currentTick 开始（stopped 时为 0，seek 后为 seek 位置，paused 时为暂停位置） */
   play(): void {
     const state = this.store.getState()
-    const startTick = state.transportState === 'paused' ? state.currentTick : 0
-    // 调用 store 的 play action（会设置 transportState='playing', startTime=performance.now()）
+    const startTick = state.currentTick
+    // 调用 store 的 play action（会设置 transportState='playing'）
     state.play()
     // 用音频时钟覆盖 startTime
     this.store.setState({ startTime: this.audioCtx.currentTime, startTick })

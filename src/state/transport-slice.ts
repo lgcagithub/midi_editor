@@ -21,7 +21,7 @@ export interface TransportSlice {
   /** 播放时是否自动跟随光标 */
   autoFollow: boolean
 
-  /** 开始播放：STOPPED→PLAYING(startTick=0) | PAUSED→PLAYING(startTick=currentTick) */
+  /** 开始播放：始终从 currentTick 开始（stopped 时为 0，seek 后为 seek 位置，paused 时为暂停位置） */
   play: () => void
   /** 暂停播放：PLAYING→PAUSED（保留 currentTick） */
   pause: () => void
@@ -56,8 +56,8 @@ export const createTransportSlice: StateCreator<
     set((state) => ({
       transportState: 'playing',
       startTime: performance.now(),
-      startTick: state.transportState === 'paused' ? state.currentTick : 0,
-      lastStartTick: state.transportState === 'paused' ? state.currentTick : 0,
+      startTick: state.currentTick,
+      lastStartTick: state.currentTick,
     })),
 
   pause: () =>
