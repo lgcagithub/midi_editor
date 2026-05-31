@@ -32,10 +32,19 @@ export class Transport {
     this.store.setState({ startTime: this.audioCtx.currentTime, startTick })
   }
 
-  /** 暂停播放 */
+  /** 暂停播放
+   *
+   * 暂停位置取决于 store 的 pauseBehavior：
+   * - 'keep'（默认）：停留在暂停时的 tick
+   * - 'return'：回卷到 lastStartTick（本次播放开始的 tick） */
   pause(): void {
-    const tick = this.getCurrentTick()
-    this.store.setState({ transportState: 'paused', currentTick: tick })
+    const state = this.store.getState()
+    if (state.pauseBehavior === 'return') {
+      this.store.setState({ transportState: 'paused', currentTick: state.lastStartTick })
+    } else {
+      const tick = this.getCurrentTick()
+      this.store.setState({ transportState: 'paused', currentTick: tick })
+    }
   }
 
   /** 停止并回卷到 tick 0 */

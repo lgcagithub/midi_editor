@@ -64,6 +64,15 @@ export function play(): void {
   transport?.play()
 }
 
+/**
+ * 暂停播放
+ *
+ * 1) 暂停 Transport（冻结 currentTick）
+ * 2) 立即静音所有振荡器
+ *
+ * 暂停位置取决于 transportSlice 的 pauseBehavior：
+ * - 'keep'（默认）：停留在暂停时的 tick
+ * - 'return'：回卷到 lastStartTick（本次播放开始的 tick） */
 export function pause(): void {
   transport?.pause()
   // 立即停止所有正在发声的振荡器
@@ -82,6 +91,23 @@ export function stop(): void {
 
 export function getTransport(): Transport | null {
   return transport
+}
+
+/**
+ * 跳转到指定 tick
+ *
+ * 1) 静音所有当前发声的音符
+ * 2) 更新 Transport 位置
+ * 3) 重置调度器窗口，丢弃已安排但未触发的事件 */
+export function seekTo(tick: number): void {
+  if (!audioCtx || !oscBank || !transport || !scheduler) return
+  resumeAudioCtx()
+  // 1. 静音所有当前发声的音符
+  oscBank.stopAll(audioCtx.currentTime)
+  // 2. 更新 Transport 位置
+  transport.seekTo(tick)
+  // 3. 重置调度器窗口
+  scheduler.resetScheduleWindow()
 }
 
 function resumeAudioCtx(): void {
