@@ -53,6 +53,11 @@ export class Scheduler {
     }
   }
 
+  /** 重置调度窗口 —— seek 后调用，确保调度窗口覆盖新位置后的音符 */
+  resetScheduleWindow(): void {
+    this.lastScheduledTime = this.audioCtx.currentTime
+  }
+
   // ── 调度逻辑（公开以便测试） ──────────────────────
 
   tick(): void {
@@ -111,5 +116,35 @@ export class Scheduler {
     // 更新 store 中的 currentTick（用于 UI 光标同步）
     const currentTick = this.transport.getCurrentTick()
     this.store.setState({ currentTick })
+
+    // ── 项目末尾检测 ────────────────────────────
+    if (state.endBehavior === 'stop' || state.endBehavior === 'loop') {
+      const maxEndTick = computeMaxEndTick(state.tracks)
+      if (maxEndTick > 0 && currentTick >= maxEndTick) {
+        if (state.endBehavior === 'stop') {
+          this.store.getState().stop()
+        } else {
+          // loop: seek to 0
+          this.store.getState().seekTo(0)
+          this.lastScheduledTime = this.audioCtx.currentTime
+        }
+        return // 跳过本次调度的音符触发
+      }
+    }
   }
+}
+
+/**
+ * 计算所有音符的最大结束 tick（用于项目末尾检测）
+ * 若无音符则返回 0
+ */
+function computeMaxEndTick(tracks: StoreState['tracks']): number {
+  let maxEnd = 0
+  for (const track of tracks) {
+    for (const note of track.notes) {
+      const end = note.startTick + note.duration
+      if (end > maxEnd) maxEnd = end
+    }
+  }
+  return maxEnd
 }
