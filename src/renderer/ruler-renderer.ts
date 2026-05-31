@@ -227,8 +227,8 @@ export class RulerRenderer {
   /** 销毁渲染器，移除事件监听 */
   dispose(): void {
     this.canvas.removeEventListener('mousedown', this.boundHandleMouseDown)
-    this.canvas.removeEventListener('mousemove', this.boundHandleMouseMove)
-    this.canvas.removeEventListener('mouseup', this.boundHandleMouseUp)
+    document.removeEventListener('mousemove', this.boundHandleMouseMove)
+    document.removeEventListener('mouseup', this.boundHandleMouseUp)
   }
 
   // ============================================================
@@ -388,8 +388,9 @@ export class RulerRenderer {
 
   private setupEvents(): void {
     this.canvas.addEventListener('mousedown', this.boundHandleMouseDown)
-    this.canvas.addEventListener('mousemove', this.boundHandleMouseMove)
-    this.canvas.addEventListener('mouseup', this.boundHandleMouseUp)
+    // mousemove / mouseup 挂在 document 上以免拖拽超出 ruler 区域时丢失
+    document.addEventListener('mousemove', this.boundHandleMouseMove)
+    document.addEventListener('mouseup', this.boundHandleMouseUp)
   }
 
   /** 鼠标点击/拖拽位置 → tick */
