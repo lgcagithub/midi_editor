@@ -317,9 +317,14 @@ export class PianoRollOrchestrator {
     // 检测 stopped→playing 切换，自动恢复 autoFollow
     // 必须先更新 prevTransportState，避免 setAutoFollow 触发嵌套 onStoreChange 时无限递归
     const wasStopped = this.prevTransportState === 'stopped'
+    const wasNotStopped = this.prevTransportState !== 'stopped'
     this.prevTransportState = state.transportState
     if (state.transportState === 'playing' && wasStopped) {
       state.setAutoFollow(true)
+    }
+    // 检测 playing/paused→stopped 切换，若 autoFollow 开启则滚动回开头
+    if (state.transportState === 'stopped' && wasNotStopped && state.autoFollow) {
+      state.setViewport({ scrollX: 0 })
     }
 
     // 检测是否需要更新 mapper（zoomX/orientation/ppq/tempoMap 任一变化）
