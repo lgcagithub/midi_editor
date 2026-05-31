@@ -407,10 +407,16 @@ export class PianoRollOrchestrator {
       }
     }
 
-    // 播放中始终重绘网格+音符（用于平滑滚动）
+    // 播放中仅 autoFollow 滚动或脏标记时才重绘网格+音符，避免无谓 GPU 开销
     if (state.transportState === 'playing') {
-      this.renderGridLayer(state)
-      this.renderNoteLayer(state)
+      if (state.autoFollow || this.dirtyGrid) {
+        this.renderGridLayer(state)
+        this.dirtyGrid = false
+      }
+      if (state.autoFollow || this.dirtyNotes) {
+        this.renderNoteLayer(state)
+        this.dirtyNotes = false
+      }
     } else {
       // 脏标志逻辑
       if (this.dirtyGrid) {
