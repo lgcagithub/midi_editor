@@ -1,8 +1,4 @@
-## Purpose
-
-### Requirement: Transport state machine
-
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: Transport state machine
 
@@ -10,13 +6,14 @@
 
 - **STOPPED**：播放停止，cursor 归零
 - **PLAYING**：播放进行中，cursor 随时间前进
-- **PAUSED**：播放暂停，cursor 保持在当前位置
+- **PAUSED**：播放暂停，cursor 行为由 `pauseBehavior` 决定
 
 状态转换：
 
-- `play()`: STOPPED → PLAYING (cursor 从 0 开始) 或 PAUSED → PLAYING (cursor 从暂停位置继续)
-- `pause()`: PLAYING → PAUSED
-- `stop()`: PLAYING → STOPPED 或 PAUSED → STOPPED (cursor 归零)
+- `play()`: STOPPED → PLAYING (cursor 从 0 开始) 或 PAUSED → PLAYING (cursor 从 `lastStartTick` 或当前位置继续)
+- `pause()`: PLAYING → PAUSED。cursor 行为由 `pauseBehavior` 决定：`'keep'` 时停在当前位置（默认），`'return'` 时跳回 `lastStartTick`
+- `stop()`: PLAYING → STOPPED 或 PAUSED → STOPPED。cursor 永远归零
+- `seekTo(tick)`: 任意状态均可调用——PLAYING 时重置 `startTime=audioCtx.currentTime, startTick=tick` 并继续播放；PAUSED/STOPPED 时直接设 `currentTick=tick`
 
 Transport 状态 SHALL 包含以下字段：
 
@@ -24,6 +21,10 @@ Transport 状态 SHALL 包含以下字段：
 - `currentTick`: number — 当前播放位置
 - `startTime`: number — 本次 play 开始的 `AudioContext.currentTime`
 - `startTick`: number — 本次 play 开始时的 cursor tick
+- `lastStartTick`: number — 最近一次 `play()` 或 `seekTo()` 设置 `startTick` 时的值，用于 `pauseBehavior='return'`
+- `pauseBehavior`: `'keep'` | `'return'` — pause 后的 cursor 行为（默认 `'keep'`）。`keep` 停在当前位置；`return` 回到 `lastStartTick`，即上次开始播放或 seek 的位置
+- `endBehavior`: `'stop'` | `'loop'` — 播放到项目末尾的行为（默认 `'stop'`）
+- `autoFollow`: boolean — 播放时是否自动跟随光标（默认 `true`）
 
 #### Scenario: Play from stopped starts at tick 0
 
@@ -35,34 +36,70 @@ Transport 状态 SHALL 包含以下字段：
 - **WHEN** state=PAUSED，currentTick=960，调用 `play()`
 - **THEN** state 变为 PLAYING，startTick=960，startTime=audioCtx.currentTime
 
-#### Scenario: Pause from playing
+#### Scenario: Pause from playing keeps current position (default)
 
-- **WHEN** state=PLAYING，调用 `pause()`
-- **THEN** state 变为 PAUSED，currentTick 保持在暂停时刻的位置
+- **WHEN** pauseBehavior='keep', state=PLAYING, currentTick=960，调用 `pause()`
+- **THEN** state 变为 PAUSED，currentTick 保持在 960
 
-#### Scenario: Stop from playing resets cursor to 0
+#### Scenario: Pause from playing returns to last start position
 
-- **WHEN** state=PLAYING，调用 `stop()`
+- **WHEN** pauseBehavior='return', lastStartTick=480, state=PLAYING, currentTick=960，调用 `pause()`
+- **THEN** state 变为 PAUSED，currentTick=480（跳回上次 play/seek 的起点）
+
+#### Scenario: Stop always resets cursor to 0
+
+- **WHEN** state=PLAYING 或 PAUSED，调用 `stop()`
 - **THEN** state 变为 STOPPED，currentTick=0
 
-#### Scenario: Stop from paused resets cursor to 0
+#### Scenario: Seek while stopped
 
-- **WHEN** state=PAUSED，调用 `stop()`
-- **THEN** state 变为 STOPPED，currentTick=0
+- **WHEN** state=STOPPED，调用 `seekTo(480)`
+- **THEN** state 保持 STOPPED，currentTick=480
 
-### Requirement: Current tick calculation during playback
+#### Scenario: Seek while playing
 
-播放中，`currentTick` SHALL 通过以下公式计算：
+- **WHEN** state=PLAYING，调用 `seekTo(960)`
+- **THEN** state 保持 PLAYING，startTick=960，startTime=audioCtx.currentTime，当前发声音符静音，播放从 tick=960 继续
 
+#### Scenario: Seek while paused
+
+- **WHEN** state=PAUSED, currentTick=100，调用 `seekTo(480)`
+- **THEN** state 保持 PAUSED，currentTick=480，startTick=480
+
+### Requirement: SoundSource interface
+
+系统 SHALL 定义 `SoundSource` 接口，作为所有音源实现的抽象：
+
+```typescript
+interface SoundSource {
+  noteOn(pitch: number, velocity: number, when: number, endTime?: number): void;
+  noteOff(pitch: number, when: number): void;
+  stopAll(when: number): void;
+  setInstrument(program: number): void;
+  dispose(): void;
+}
 ```
-currentTick = startTick + secondsToTick(elapsed, tempoMap, ppq, startTick)
-其中 elapsed = audioCtx.currentTime - startTime
-```
 
-#### Scenario: Two seconds of playback from tick 480
+- `noteOn`：在 `when` 秒（AudioContext 时间）开始演奏指定音高。可选的 `endTime` 参数指定音符结束的绝对音频时间，允许音源实现预调度完整的音量包络
+- `noteOff`：在 `when` 秒停止指定音高
+- `stopAll`：在 `when` 秒立即停止所有正在发声的音符并清理资源。用于 stop、pause、seek 操作时的快速静音
+- `setInstrument`：切换 MIDI program（音色），各实现自行解释
+- `dispose`：释放音频资源
 
-- **WHEN** state=PLAYING, startTick=480, tempo=120 BPM, ppq=480, elapsed=2.0s
-- **THEN** currentTick = 480 + 1920 = 2400
+#### Scenario: OscillatorBank satisfies SoundSource
+
+- **WHEN** 创建 `OscillatorBank` 实例
+- **THEN** 该实例满足 `SoundSource` 接口的所有方法签名，包括 `stopAll`
+
+#### Scenario: SoundSource supports optional endTime
+
+- **WHEN** 调用 `soundSource.noteOn(60, 100, 10.0)` 不传第 4 参数
+- **THEN** 调用正常执行（兼容旧签名）
+
+#### Scenario: stopAll silences all active oscillators
+
+- **WHEN** OscillatorBank 有 3 个活跃振荡器（C4, E4, G4），调用 `stopAll(audioCtx.currentTime)`
+- **THEN** 所有 3 个振荡器在指定时间停止并被清理
 
 ### Requirement: Look-ahead scheduler loop
 
@@ -73,10 +110,12 @@ currentTick = startTick + secondsToTick(elapsed, tempoMap, ppq, startTick)
 1. 计算当前 `now = audioCtx.currentTime`
 2. 调度窗口为 `[lastScheduledTime, now + lookAheadTime]`，其中 `lookAheadTime = 0.1` 秒
 3. 遍历所有音轨中所有音符，找到 `noteOnTick` 和 `noteOffTick` 落在调度窗口内且尚未调度的事件
-4. 对每个事件计算准确的 AudioContext 时间：`eventTime = transport.startTime + tickDeltaToSeconds(eventTick - transport.startTick, tempoMap, ppq, transport.startTick)`
-5. 对于 noteOn 事件，SHALL 调用 `soundSource.noteOn(pitch, velocity, noteStartAudioTime, noteEndAudioTime)`，将音符结束时间一并传入以支持包络预调度
+4. 对每个事件计算准确的 AudioContext 时间
+5. 对于 noteOn 事件，SHALL 调用 `soundSource.noteOn(pitch, velocity, noteStartAudioTime, noteEndAudioTime)`
 6. 对于 noteOff 事件，调用 `soundSource.noteOff(pitch, noteEndAudioTime)`
 7. 推进 `lastScheduledTime` 到 `now + lookAheadTime`
+
+Scheduler SHALL 提供 `resetScheduleWindow()` 方法，将 `lastScheduledTime` 重置为 `audioCtx.currentTime`，用于 seek 操作后重建调度窗口。
 
 #### Scenario: Note within look-ahead window is scheduled with endTime
 
@@ -93,98 +132,61 @@ currentTick = startTick + secondsToTick(elapsed, tempoMap, ppq, startTick)
 - **WHEN** 音符的 startTick 对应的 audioCtx 时间 ≤ lastScheduledTime
 - **THEN** 该音符本次不重复调度
 
-### Requirement: Tab background compensation
+#### Scenario: resetScheduleWindow after seek
 
-系统 SHALL 在页面从后台恢复时处理调度追赶：由于浏览器在后台标签页中降频 `setInterval`，恢复前台时 `transport` 基于 `audioCtx.currentTime` 重新计算 `currentTick`，然后将 `lastScheduledTime` 重置为当前 `currentTime`，通过 `setInterval` 循环一次性安排追赶窗口内所有缺失事件。
+- **WHEN** seek 到 tick=1920，调用 `scheduler.resetScheduleWindow()`
+- **THEN** `lastScheduledTime` 设为 `audioCtx.currentTime`，下一次 tick 的调度窗口覆盖 seek 后的音符
 
-#### Scenario: Resume after background tab
+## ADDED Requirements
 
-- **WHEN** 标签页在后台停留 5 秒后恢复，期间播放未暂停
-- **THEN** currentTick 基于 currentTime 重算，已过去区间的音符 Note On 不补发，当前和未来窗口内的事件正常安排
+### Requirement: Playback end-of-project detection
 
-### Requirement: Playback cursor via requestAnimationFrame
+系统 SHALL 在调度循环中检测当前 tick 是否已超过项目中最后一个音符的结束位置（`maxEndTick = max(track.notes.map(n => n.startTick + n.duration))`）。
 
-播放光标的位置 SHALL 通过独立的 `requestAnimationFrame` 循环计算和更新，与调度 `setInterval` 解耦：
+当 `currentTick >= maxEndTick` 且 `endBehavior='stop'` 时，系统 SHALL 自动调用 `stop()`。当 `endBehavior='loop'` 时，系统 SHALL 自动调用 `seekTo(0)`。
 
-```
-cursorTick = transport.startTick + secondsToTick(audioCtx.currentTime - transport.startTime, tempoMap, ppq, transport.startTick)
-```
+#### Scenario: Auto-stop at project end
 
-光标像素位置由 `cursorTick` 经坐标映射函数得出，传递到光标层 Canvas 进行绘制。
+- **WHEN** endBehavior='stop', maxEndTick=3840, currentTick 达到 3840
+- **THEN** playbackManager 自动 stop
 
-#### Scenario: Cursor updates at frame rate
+#### Scenario: Auto-loop at project end
 
-- **WHEN** 播放进行中
-- **THEN** 播放光标每帧（约 16.7ms）更新一次位置
+- **WHEN** endBehavior='loop', maxEndTick=3840, currentTick 达到 3840
+- **THEN** 播放自动 seek 到 tick=0 并继续
 
-#### Scenario: Cursor stops on pause
+### Requirement: TransportBar playback mode toggles
 
-- **WHEN** transport state 变为 PAUSED
-- **THEN** rAF 循环终止，光标停在当前位置
+TransportBar SHALL 在 SkipForward 按钮右侧渲染三个播放模式 toggle 按钮（Loop、Auto-Follow、Pause Behavior），与传输操作按钮通过 18px 间距形成视觉分组。
 
-### Requirement: SoundSource interface
+三个 toggle 按钮 SHALL 使用 Phosphor Duotone 图标集，遵循 Merengue 暗色主题胶囊样式：28px × 28px，border-radius 8px，基础态 `--surface2` 底 + `--text3` 图标色；激活态 `--accent` 20% 透明度底 + `--accent` 图标色；hover 态 `--surface3` 底 + `--text1` 图标色。过渡动画 SHALL 使用 spring easing（`all 0.15s ease`）。
 
-系统 SHALL 定义 `SoundSource` 接口，作为所有音源实现的抽象：
+#### Scenario: Loop toggle switches endBehavior
 
-```typescript
-interface SoundSource {
-  noteOn(pitch: number, velocity: number, when: number, endTime?: number): void;
-  noteOff(pitch: number, when: number): void;
-  setInstrument(program: number): void;
-  dispose(): void;
-}
-```
+- **WHEN** endBehavior='stop'，用户点击 Loop 按钮
+- **THEN** endBehavior 变为 'loop'，按钮变为 coral 激活态；再次点击则切回 'stop'，按钮变回灰色
 
-- `noteOn`：在 `when` 秒（AudioContext 时间）开始演奏指定音高。可选的 `endTime` 参数指定音符结束的绝对音频时间，允许音源实现预调度完整的音量包络
-- `noteOff`：在 `when` 秒停止指定音高
-- `setInstrument`：切换 MIDI program（音色），各实现自行解释
-- `dispose`：释放音频资源
+#### Scenario: Auto-follow toggle switches autoFollow
 
-#### Scenario: OscillatorBank satisfies SoundSource
+- **WHEN** autoFollow=true，用户点击 Auto-Follow 按钮
+- **THEN** autoFollow 变为 false，按钮变为灰色；再次点击则恢复 true 和 coral 激活态
 
-- **WHEN** 创建 `OscillatorBank` 实例
-- **THEN** 该实例满足 `SoundSource` 接口的所有方法签名，包括可选的 `endTime` 参数
+#### Scenario: Auto-follow button reflects manual scroll disable
 
-#### Scenario: SoundSource supports optional endTime
+- **WHEN** autoFollow=true（按钮 coral），用户手动滚动滚轮导致 autoFollow 变为 false
+- **THEN** Auto-Follow 按钮 UI 同步变为灰色非激活态
 
-- **WHEN** 调用 `soundSource.noteOn(60, 100, 10.0)` 不传第 4 参数
-- **THEN** 调用正常执行（兼容旧签名）
+#### Scenario: Pause behavior dropdown shows two options
 
-### Requirement: OscillatorBank — initial sound source
+- **WHEN** 用户点击 Pause Behavior（齿轮）按钮
+- **THEN** 弹出面板显示 Keep（停在当前位置）和 Return（回到上次播放起点）两个选项，当前选中项左侧显示 coral checkmark
 
-系统 SHALL 实现 `OscillatorBank` 作为初始音源，使用 Web Audio API 的 `OscillatorNode`：
+#### Scenario: Pause behavior dropdown selects return
 
-- `noteOn(pitch, velocity, when, endTime?)` 创建新的 `OscillatorNode`（方波），连接 `GainNode`，振荡器频率通过 `midiToHz(pitch)` 设定
-- 当 `endTime` 提供时，增益遵循指数衰减包络：2ms attack → 以 `τ = (endTime - when - 2ms) / 4` 的时间常数指数衰减趋近 `peakGain × 0.05`，并在 `endTime` 处精确 ramp 到 0
-- 当 `endTime` 未提供时，增益为恒定值 `(velocity / 127) × 0.3`（向后兼容）
-- `noteOff` 在指定时间调用 `osc.stop(when)`，并清理对应资源
-- 每个 pitch 的活跃振荡器被追踪，以免资源泄漏
+- **WHEN** pauseBehavior='keep'，用户打开下拉并点击 Return
+- **THEN** pauseBehavior 变为 'return'，面板关闭
 
-#### Scenario: Note on creates oscillator
+#### Scenario: Pause behavior dropdown dismisses on outside click
 
-- **WHEN** 调用 `noteOn(60, 100, audioCtx.currentTime + 0.05)`
-- **THEN** 在 0.05 秒后演奏 C4，频率约 261.6Hz，增益约 0.236
-
-#### Scenario: Note on with endTime creates envelope
-
-- **WHEN** 调用 `noteOn(60, 100, 10.0, 12.0)`
-- **THEN** 在 10.0s 演奏 C4，gain 经历 2ms attack + 指数衰减到 12.0s
-
-#### Scenario: Note off stops oscillator
-
-- **WHEN** 调用 `noteOff(60, audioCtx.currentTime + 0.5)`
-- **THEN** 在 0.5 秒后停止 C4 对应的振荡器
-
-### Requirement: AudioContext user gesture unlock
-
-系统 SHALL 在首次用户交互（点击播放按钮）时调用 `audioCtx.resume()`，满足浏览器自动播放策略要求。`AudioContext` SHALL 在应用启动时创建，但仅在用户手势后恢复运行。
-
-#### Scenario: AudioContext starts suspended
-
-- **WHEN** 应用首次加载
-- **THEN** `audioCtx.state` 为 `'suspended'`
-
-#### Scenario: Play button resumes AudioContext
-
-- **WHEN** 用户点击播放按钮
-- **THEN** `audioCtx.resume()` 被调用，`audioCtx.state` 变为 `'running'`
+- **WHEN** Pause Behavior 下拉面板打开，用户点击面板外任意位置
+- **THEN** 面板关闭，pauseBehavior 不变
