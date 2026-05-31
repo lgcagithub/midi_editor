@@ -18,6 +18,8 @@ export interface ViewportState {
   zoomY: number
   /** 每个音符的高度 (px) */
   noteHeight: number
+  /** 标尺高度 (px) */
+  rulerHeight: number
 }
 
 export interface EditorSlice {
@@ -67,6 +69,7 @@ export const createEditorSlice: StateCreator<EditorSlice, [], [], EditorSlice> =
     zoomX: 1,
     zoomY: 1,
     noteHeight: 14,
+    rulerHeight: 32,
   },
   snapGridTicks: 120, // 默认 1/16 音符（PPQ=480 → 480/4=120）
 

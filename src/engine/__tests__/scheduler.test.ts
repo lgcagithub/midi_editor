@@ -12,6 +12,7 @@ function createMockSoundSource(): SoundSource {
     noteOn: vi.fn<(pitch: number, velocity: number, when: number, endTime?: number) => void>(),
     noteOff: vi.fn(),
     setInstrument: vi.fn(),
+    stopAll: vi.fn(),
     dispose: vi.fn(),
   }
 }
@@ -84,21 +85,30 @@ function createTestStore(overrides?: Partial<StoreState>) {
     currentTick: 0,
     startTime: 0,
     startTick: 0,
+    lastStartTick: 0,
+    pauseBehavior: 'keep',
+    endBehavior: 'stop',
+    autoFollow: true,
     play: () =>
       set((s) => ({
         transportState: 'playing',
         startTime: performance.now(),
         startTick: s.transportState === 'paused' ? s.currentTick : 0,
+        lastStartTick: s.transportState === 'paused' ? s.currentTick : 0,
       })),
     pause: () => set({ transportState: 'paused' }),
     stop: () => set({ transportState: 'stopped', currentTick: 0 }),
+    seekTo: () => {},
+    setPauseBehavior: () => {},
+    setEndBehavior: () => {},
+    setAutoFollow: () => {},
 
     // EditorSlice
     activeTool: 'pointer',
     activeTrackId: '',
     selectedNoteIds: [],
     orientation: 'vertical',
-    viewport: { scrollX: 0, scrollY: 0, zoomX: 1, zoomY: 1, noteHeight: 14 },
+    viewport: { scrollX: 0, scrollY: 0, zoomX: 1, zoomY: 1, noteHeight: 14, rulerHeight: 32 },
     snapGridTicks: 120,
     setTool: () => {},
     setActiveTrackId: () => {},

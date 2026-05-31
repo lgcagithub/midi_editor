@@ -9,6 +9,8 @@ export interface SoundSource {
   noteOff(pitch: number, when: number): void
   /** 切换乐器（音色程序号 0-127） */
   setInstrument(program: number): void
+  /** 立即停止所有正在发声的音符并清理资源。用于 stop、pause、seek 操作时的快速静音 */
+  stopAll(when: number): void
   /** 释放所有资源 */
   dispose(): void
 }

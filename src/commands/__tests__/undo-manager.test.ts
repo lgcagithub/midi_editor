@@ -41,7 +41,7 @@ function createMockStore(initialNotes: Note[] = []): StoreState {
     activeTrackId: 'track-1',
     selectedNoteIds: [],
     orientation: 'vertical',
-    viewport: { scrollX: 0, scrollY: 0, zoomX: 1, zoomY: 1, noteHeight: 14 },
+    viewport: { scrollX: 0, scrollY: 0, zoomX: 1, zoomY: 1, noteHeight: 14, rulerHeight: 32 },
     snapGridTicks: 120,
 
     // --- Project ---
@@ -96,9 +96,17 @@ function createMockStore(initialNotes: Note[] = []): StoreState {
     startTime: 0,
     startTick: 0,
     currentTick: 0,
+    lastStartTick: 0,
+    pauseBehavior: 'keep',
+    endBehavior: 'stop',
+    autoFollow: true,
     play: () => {},
     pause: () => {},
     stop: () => {},
+    seekTo: () => {},
+    setPauseBehavior: () => {},
+    setEndBehavior: () => {},
+    setAutoFollow: () => {},
 
     // --- Tempo / TimeSig ---
     updateTempoMap: () => {},
