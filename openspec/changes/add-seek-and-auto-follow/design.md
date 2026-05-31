@@ -92,7 +92,7 @@ seekTo(tick):
   4. store.setState({ currentTick: tick })    // 光标立即跳转
 ```
 
-- `Transport.seekTo(tick)`: 如果 playing，设 `startTime = audioCtx.currentTime, startTick = tick`；如果 paused/stopped，直接设 `currentTick = tick`
+- `Transport.seekTo(tick)`: 统一设 `startTick = tick, lastStartTick = tick`。如果 playing 设 `startTime = audioCtx.currentTime`；如果 paused/stopped 设 `currentTick = tick`
 - `Scheduler.resetScheduleWindow()`: 设 `lastScheduledTime = audioCtx.currentTime`，确保下一个调度窗口覆盖新位置后的音符
 
 ### D6: Pause 行为可配置

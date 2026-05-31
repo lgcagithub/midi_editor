@@ -155,20 +155,6 @@ Scheduler SHALL 提供 `resetScheduleWindow()` 方法，将 `lastScheduledTime` 
 - **WHEN** endBehavior='loop', maxEndTick=3840, currentTick 达到 3840
 - **THEN** 播放自动 seek 到 tick=0 并继续
 
-### Requirement: Manual scroll disables auto-follow
-
-当用户在播放期间手动更改 `scrollX`（通过滚轮或中键拖拽），系统 SHALL 设置 `autoFollow = false`。当用户调用 `stop()` 后再 `play()` 时，`autoFollow` SHALL 恢复为 `true`。
-
-#### Scenario: Wheel scroll disables auto-follow
-
-- **WHEN** transportState='playing', autoFollow=true，用户在 Piano Roll 上滚动滚轮
-- **THEN** autoFollow 变为 false
-
-#### Scenario: Stop then play re-enables auto-follow
-
-- **WHEN** autoFollow=false，用户调用 `stop()` 后调用 `play()`
-- **THEN** autoFollow 变为 true
-
 ### Requirement: TransportBar playback mode toggles
 
 TransportBar SHALL 在 SkipForward 按钮右侧渲染三个播放模式 toggle 按钮（Loop、Auto-Follow、Pause Behavior），与传输操作按钮通过 18px 间距形成视觉分组。

@@ -93,7 +93,7 @@
 
 ### Requirement: App layout grid for ruler
 
-App 主内容区的布局 SHALL 从单行 flex row 改为 2 列 × 2 行的网格布局：
+App 主内容区的布局 SHALL 从单行 flex row 改为嵌套 flex 布局（3 列，其中第 1-2 列内部为 2 行）：
 
 - **第 1 列**（固定 72px）：角落空白区（顶部）+ 键盘（底部，flex:1）
 - **第 2 列**（flex:1）：标尺（顶部，rulerHeight）+ Piano Roll（底部，flex:1）
