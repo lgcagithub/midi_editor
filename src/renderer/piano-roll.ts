@@ -126,6 +126,8 @@ export class PianoRollOrchestrator {
   // --- 动画 ---
   private animFrameId = 0
   private lastCursorTick = -1
+  /** 上次光标渲染时的 scrollX，用于检测滚动引起的光标位移 */
+  private lastCursorScrollX = 0
 
   // --- 事件绑定 ---
   private handleWheelBind: (e: WheelEvent) => void
@@ -409,10 +411,11 @@ export class PianoRollOrchestrator {
 
     // 光标（tick 变化或 scroll 变化或播放中都需要重绘）
     const tick = computeCurrentTick(state)
-    const scrollChanged = state.viewport.scrollX !== this.prevScrollX
+    const scrollChanged = state.viewport.scrollX !== this.lastCursorScrollX
     if (Math.abs(tick - this.lastCursorTick) > 0.5 || scrollChanged || state.transportState === 'playing') {
       this.renderCursorLayer(state, tick)
       this.lastCursorTick = tick
+      this.lastCursorScrollX = state.viewport.scrollX
     }
 
     // 交互层（由 interactionState 变化触发，外部通过 renderInteraction 手动触发）
