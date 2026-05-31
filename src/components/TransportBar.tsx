@@ -377,10 +377,6 @@ export default function TransportBar(): JSX.Element {
               }}
               onClick={() => { setPauseBehavior('keep'); setDropdownOpen(false) }}
             >
-              {pauseBehavior === 'keep' && (
-                <i className="ph-bold ph-check" style={{ color: 'var(--accent, #FF5C72)', fontSize: 14 }} />
-              )}
-              {pauseBehavior !== 'keep' && <span style={{ width: 18 }} />}
               Keep（停在当前位置）
             </div>
             <div
@@ -393,10 +389,6 @@ export default function TransportBar(): JSX.Element {
               }}
               onClick={() => { setPauseBehavior('return'); setDropdownOpen(false) }}
             >
-              {pauseBehavior === 'return' && (
-                <i className="ph-bold ph-check" style={{ color: 'var(--accent, #FF5C72)', fontSize: 14 }} />
-              )}
-              {pauseBehavior !== 'return' && <span style={{ width: 18 }} />}
               Return（回到播放起点）
             </div>
           </div>
