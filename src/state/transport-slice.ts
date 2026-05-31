@@ -23,7 +23,7 @@ export interface TransportSlice {
 
   /** 开始播放：始终从 currentTick 开始（stopped 时为 0，seek 后为 seek 位置，paused 时为暂停位置） */
   play: () => void
-  /** 暂停播放：PLAYING→PAUSED（保留 currentTick） */
+  /** 暂停播放：PLAYING→PAUSED（currentTick 由 Transport 基于音频时钟实时计算并写入） */
   pause: () => void
   /** 停止播放：→STOPPED（重置 currentTick=0） */
   stop: () => void
@@ -61,11 +61,7 @@ export const createTransportSlice: StateCreator<
     })),
 
   pause: () =>
-    set((state) => ({
-      transportState: 'paused',
-      currentTick:
-        state.pauseBehavior === 'return' ? state.lastStartTick : state.currentTick,
-    })),
+    set({ transportState: 'paused' }),
 
   stop: () =>
     set({
