@@ -12,6 +12,7 @@ import TransportBar from '@/components/TransportBar'
 import PianoRollView from '@/components/PianoRollView'
 import KeyboardView from '@/components/KeyboardView'
 import TrackList from '@/components/TrackList'
+import RulerView from '@/components/RulerView'
 import { initPlayback, destroyPlayback } from '@/engine/playback-manager'
 
 // ============================================================
@@ -55,6 +56,29 @@ const mainStyle: React.CSSProperties = {
 }
 
 // ============================================================
+// CornerSpacer — 位于键盘左上角的空白占位
+// ============================================================
+
+/**
+ * 与 RulerView 等高的空白方块，用于填充键盘左上角
+ */
+function CornerSpacer(): JSX.Element {
+  const rulerHeight = useStore((s) => s.viewport.rulerHeight)
+  return (
+    <div
+      style={{
+        height: rulerHeight,
+        width: 72,
+        background: 'var(--bg, #1A1819)',
+        borderBottom: '1px solid var(--border, #2E2927)',
+        boxSizing: 'border-box',
+        flexShrink: 0,
+      }}
+    />
+  )
+}
+
+// ============================================================
 // App 组件
 // ============================================================
 
@@ -92,8 +116,23 @@ export default function App(): JSX.Element {
 
       {/* 主内容区 */}
       <div style={mainStyle}>
-        <KeyboardView />
-        <PianoRollView />
+        {/* Col 1：左上角空白 + 钢琴键盘 */}
+        <div style={{ display: 'flex', flexDirection: 'column', width: 72, flexShrink: 0 }}>
+          <CornerSpacer />
+          <div style={{ flex: 1, overflow: 'hidden', background: 'var(--bg, #1A1819)', borderRight: '1px solid var(--border, #2E2927)' }}>
+            <KeyboardView />
+          </div>
+        </div>
+
+        {/* Col 2：标尺 + 钢琴卷帘 */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <RulerView />
+          <div style={{ flex: 1, overflow: 'hidden' }}>
+            <PianoRollView />
+          </div>
+        </div>
+
+        {/* Col 3：音轨列表 */}
         <TrackList />
       </div>
 

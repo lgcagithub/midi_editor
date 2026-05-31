@@ -7,6 +7,7 @@
 
 import type { StoreApi, UseBoundStore } from 'zustand'
 import type { StoreState } from '@/state/store'
+import type { TransportState } from '@/state/transport-slice'
 import { createCoordinateMapper, type CoordinateMapper, type Orientation } from './coordinate-mapper'
 import { renderGrid } from './grid-renderer'
 import { renderNotes } from './note-renderer'
@@ -110,6 +111,8 @@ export class PianoRollOrchestrator {
   private prevProjectVersion = -1
   private prevSelectedHash = ''
   private prevTool: string = 'pointer'
+  /** 上一个传输状态（用于检测 stopped→playing 切换） */
+  private prevTransportState: TransportState = 'stopped'
 
   // --- Canvas 尺寸 ---
   private canvasWidth = 0
@@ -302,6 +305,12 @@ export class PianoRollOrchestrator {
     const state = this.getState()
     const vp = state.viewport
 
+    // 检测 stopped→playing 切换，自动恢复 autoFollow
+    if (state.transportState === 'playing' && this.prevTransportState === 'stopped') {
+      state.setAutoFollow(true)
+    }
+    this.prevTransportState = state.transportState
+
     // 检测是否需要更新 mapper
     if (
       state.orientation !== this.prevOrientation ||
@@ -365,16 +374,31 @@ export class PianoRollOrchestrator {
   private renderFrame(): void {
     const state = this.getState()
 
-    // 网格
-    if (this.dirtyGrid) {
-      this.renderGridLayer(state)
-      this.dirtyGrid = false
+    // 平滑自动跟随（播放中 + autoFollow 启用）
+    if (state.transportState === 'playing' && state.autoFollow) {
+      const tick = computeCurrentTick(state)
+      const cursorPixel = this.mapper.tickToPixel(tick)
+      const targetScrollX = cursorPixel - this.canvasWidth * 0.3
+      const newScrollX = state.viewport.scrollX + (targetScrollX - state.viewport.scrollX) * 0.12
+      if (Math.abs(targetScrollX - state.viewport.scrollX) > 1) {
+        state.setViewport({ scrollX: Math.max(0, Math.min(newScrollX, 100000)) })
+      }
     }
 
-    // 音符
-    if (this.dirtyNotes) {
+    // 播放中始终重绘网格+音符（用于平滑滚动）
+    if (state.transportState === 'playing') {
+      this.renderGridLayer(state)
       this.renderNoteLayer(state)
-      this.dirtyNotes = false
+    } else {
+      // 脏标志逻辑
+      if (this.dirtyGrid) {
+        this.renderGridLayer(state)
+        this.dirtyGrid = false
+      }
+      if (this.dirtyNotes) {
+        this.renderNoteLayer(state)
+        this.dirtyNotes = false
+      }
     }
 
     // 光标（每次 rAF 都重新计算，但只在变化时重绘）
@@ -518,6 +542,10 @@ export class PianoRollOrchestrator {
       // 普通滚轮 → 滚动
       e.preventDefault()
       const state = this.getState()
+      // 手动滚动时关闭自动跟随
+      if (state.transportState === 'playing' && state.autoFollow) {
+        state.setAutoFollow(false)
+      }
       state.setViewport({
         scrollX: Math.max(0, state.viewport.scrollX + e.deltaX),
         scrollY: Math.max(0, state.viewport.scrollY + e.deltaY),
@@ -553,6 +581,10 @@ export class PianoRollOrchestrator {
       const dy = e.clientY - this.panStartY
 
       const state = this.getState()
+      // 手动拖拽平移时关闭自动跟随
+      if (state.transportState === 'playing' && state.autoFollow) {
+        state.setAutoFollow(false)
+      }
       state.setViewport({
         scrollX: Math.max(0, this.panScrollX - dx),
         scrollY: Math.max(0, this.panScrollY - dy),
